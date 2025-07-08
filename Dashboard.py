@@ -17,15 +17,20 @@ st.markdown(
 """
     ## Aims
 
-    - Apply knowledge gained from the DSHI course on a practical scenario related to a medical task.
-    - Build a web dashboard incorporating data science techniques to solve problems relevant to the selected medical dataset.
-    - Understand how user testing helps to iteratively improve technical systems for data science.
-
-    ## Deliverables
-    1. Web medical dashboard [6 points]
-    2. Final project report [10 points]
-    3. Portfolio showcasing video [1 point]
-    4. Final presentation with slides [3 points]
+    After completing the course the student should be able to:
+    - explain basic project management methods
+    - be able to account for success factors in Health Informatics projects
+    - understand basic methods and tools in the field of data science and machine learning
+    - explain process models for data mining projects
+    - explain the difference between rule-based methods and machine learning methods
+    - apply basic project management methods
+    - work in an international multidisciplinary project group
+    - independently lead and implement a limited project in health informatics - document the steps in the design of a prototype for a health informatics project
+    - apply the steps in a process model for data mining projects
+    - apply methods from the field of text mining on different types of health informatics problems
+    - explain and argue for their positions regarding the implementation of a health informatics project
+    - explain how to work with sensitive health information in a safe and ethical way.
+    
 """
 )
 

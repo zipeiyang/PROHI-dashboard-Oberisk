@@ -4,3 +4,4 @@ seaborn==0.13.2
 plotly-express==0.4.1
 scikit-learn==1.7.0
 shap==0.48.0
+watchdog==6.0.0
