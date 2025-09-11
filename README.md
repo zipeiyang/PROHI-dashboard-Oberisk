@@ -2,7 +2,7 @@
 
 # Oberisk
 
-Group members: 
+Group members: Matija Matic
 
 _You can modify this README file with all the information that your team consider relevant for a technical audience who would like to understand your project or to run it in the future._
 
