@@ -1,12 +1,6 @@
-# PROHI Dashboard Example
+# PROHI Dashboard - Oberisk
 
-# Oberisk
-
-Group members: Matija Matic, Alex Alfarone, Meilia Chrisandra, Anna Larsson
-
-_You can modify this README file with all the information that your team consider relevant for a technical audience who would like to understand your project or to run it in the future._
-
-_Note that this file is written in **MarkDown** language. A reference is available here: <https://www.markdownguide.org/basic-syntax/>_
+Group members: Matija Matic, Alex Alfarone, Meilia Chrisandra, Anna Larsson, Zipei Yang
 
 Include the name, logo and images refering to your project
 
@@ -14,7 +8,7 @@ Include the name, logo and images refering to your project
 
 ## Introduction
 
-[Project ] is an interactive web dashboard to.... 
+Oberisk is an interactive web dashboard to.... 
 
 The problem detected was...
 
@@ -28,9 +22,17 @@ Tested on Python 3.12.7 with the following packages:
   - Jupyter v1.1.1
   - Streamlit v1.46.1
   - Seaborn v0.13.2
+  - Scikit-Learn v1.7.1
+  - Pandas v2.3.2
+  - Numpy v2.3.2
+  - Matplotlib v3.10.6
+  - Scipy v1.16.1
+  - Xgboost v3.0.5
+  - Lightgbm v4.6.0
   - Plotly v6.2.0
-  - Scikit-Learn v1.7.0
   - shap v0.48.0
+  - watchdog v6.0.0
+
 
 ### Installation
 
@@ -64,6 +66,9 @@ To run the dashboard execute the following command:
 
 This logic resembles the expected pipeline, where the jupyter notebooks are used to iterate the data modeling part until a satisfactory trained model is created, and the streamlit scripts are only in charge of rendering the user-facing interface to generate the prediction for new data. In practice, the data science pipeline is completely independent from the web dashboard, and both are connected via the pre-trained model. 
 
-## Contributors
-
-_Add the project's authors, contact information, and links to their websites or portfolios._
+## Contacts
+Matija Matic:
+Alex Alfarone:
+Meilia Chrisandra:
+Anna Larsson:
+Zipei Yang: zipei.yang@stud.ki.se
