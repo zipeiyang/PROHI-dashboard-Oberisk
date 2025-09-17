@@ -8,7 +8,7 @@ from typing import Dict, List, Tuple
 
 # Set page configuration
 st.set_page_config(page_title="Descriptive Analytics", layout="wide")
-st.logo("./assets/oberisk_sidebar.png", size="large", icon_image="./assets/oberisk_icon.svg")
+st.logo("./assets/oberisk_sidebar.png", size="large")
 
 DEFAULT_CSV_PATH = "./assets/ObesityDataSet_raw_and_data_sinthetic.csv"
 
@@ -217,7 +217,7 @@ def plot_correlation_heatmap(df: pd.DataFrame, numeric_cols: List[str]) -> plt.F
     correlation_matrix = df[numeric_cols].corr()
     sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt='.2f', center=0)
     plt.title('Correlation Heatmap of Numerical Variables')
-    plt.xticks(rotation=45)  # Rotate x-axis labels
+    plt.xticks(rotation=45)
     plt.tight_layout()
     return fig
 
@@ -236,7 +236,7 @@ def plot_cramers_heatmap(df: pd.DataFrame, categorical_cols: List[str]) -> plt.F
     sns.heatmap(cramer_matrix.astype(float), annot=True, cmap='Blues', fmt='.2f', 
                square=True, cbar_kws={'shrink': .8})
     plt.title("Association Heatmap of Categorical Variables (Cramer's V)")
-    plt.xticks(rotation=45)  # Rotate x-axis labels
+    plt.xticks(rotation=45)
     plt.tight_layout()
     return fig
 

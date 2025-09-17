@@ -54,9 +54,9 @@ If you are using Mac, you may need to follow install Xcode. Check the official S
 To run the dashboard execute the following command:
 
 ```
-> streamlit run Dashboard.py
+> streamlit run Home.py
 # If the command above fails, use:
-> python -m streamlit run Dashboard.py
+> python -m streamlit run Home.py
 ```
 
 
