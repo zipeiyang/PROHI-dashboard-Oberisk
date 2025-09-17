@@ -2,9 +2,8 @@
 
 Group members: Matija Matic, Alex Alfarone, Meilia Chrisandra, Anna Larsson, Zipei Yang
 
-Include the name, logo and images refering to your project
 
-![Your dashboard](./assets/example-image.jpg)
+![Our project logo](./assets/oberisk_side.png)
 
 ## Introduction
 
