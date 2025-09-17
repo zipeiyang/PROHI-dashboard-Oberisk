@@ -16,6 +16,8 @@ import time
 
 # Set page configuration
 st.set_page_config(page_title="Diagnostic Analytics", layout="wide")
+st.logo("./assets/oberisk_sidebar.png", size="large", icon_image="./assets/oberisk_icon.svg")
+
 DEFAULT_CSV_PATH = "./assets/ObesityDataSet_raw_and_data_sinthetic.csv"
 
 # Define constants

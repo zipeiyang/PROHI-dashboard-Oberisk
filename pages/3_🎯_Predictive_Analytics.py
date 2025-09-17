@@ -2,7 +2,7 @@ import streamlit as st
 import pickle
 
 st.markdown("# Predictive Analytics 🎯")
-
+st.logo("./assets/oberisk_sidebar.png", size="large", icon_image="./assets/oberisk_icon.svg")
 st.sidebar.markdown("# Predictive Analytics 🎯")
 
 """

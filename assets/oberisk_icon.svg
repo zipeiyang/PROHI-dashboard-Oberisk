@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <title>Oberisk — O Plus</title>
+  <defs>
+    <style>
+      .ring{fill:none;stroke:#FF7A16;stroke-width:10;}
+      .plus{fill:none;stroke:#0F172A;stroke-width:10;stroke-linecap:round;stroke-linejoin:round;}
+    </style>
+  </defs>
+  <circle cx="64" cy="64" r="42" class="ring"/>
+  <circle cx="64" cy="64" r="30" class="ring" opacity="0.15"/>
+  <path d="M64 48v32M48 64h32" class="plus"/>
+</svg>
