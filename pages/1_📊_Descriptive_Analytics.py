@@ -8,7 +8,7 @@ from typing import Dict, List, Tuple
 
 # Set page configuration
 st.set_page_config(page_title="Descriptive Analytics", layout="wide")
-st.logo("./assets/oberisk_sidebar.png", size="large")
+st.logo("./assets/oberisk_sidebar.png", size="large", icon_image="./assets/oberisk_logo_icon.png")
 
 DEFAULT_CSV_PATH = "./assets/ObesityDataSet_raw_and_data_sinthetic.csv"
 

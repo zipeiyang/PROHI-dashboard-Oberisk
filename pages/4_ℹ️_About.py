@@ -5,7 +5,7 @@ st.set_page_config(
     page_icon="./assets/oberisk_icon.svg",
 )
 
-st.logo("./assets/oberisk_sidebar.png", size="large")
+st.logo("./assets/oberisk_sidebar.png", size="large", icon_image="./assets/oberisk_logo_icon.png")
 
 # # Page information
 
