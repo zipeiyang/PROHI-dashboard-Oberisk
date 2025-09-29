@@ -48,8 +48,8 @@ def get_user_input():
     with col1:
         st.subheader("Basic Information")
         age = st.slider("Age", 18, 80, 30)
-        height = st.slider("Height (m)", 1.4, 2.2, 1.7)
-        weight = st.slider("Weight (kg)", 40.0, 150.0, 70.0)
+        # height = st.slider("Height (m)", 1.4, 2.2, 1.7)
+        # weight = st.slider("Weight (kg)", 40.0, 150.0, 70.0)
         sex = st.selectbox("Sex", ["Male", "Female"])
         
         st.subheader("Eating Habits")
@@ -72,8 +72,8 @@ def get_user_input():
     # Create a DataFrame from user input
     user_data = {
         'age': age,
-        'height': height,
-        'weight': weight,
+        # 'height': height,
+        # 'weight': weight,
         'veggie_per_meal': veggie_per_meal,
         'meals_daily': meals_daily,
         'water_daily': water_daily,
