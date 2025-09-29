@@ -58,6 +58,7 @@ st.markdown(
     - Higher precision (reduce unnecessary referrals).
 
     ## Team OBERISK
+    *Alex Anna Matija Meilia Zipei*
 
     ## References
     1.	World Health Organization. (2021, June 9). Obesity and overweight. World Health Organization. https://www.who.int/news-room/fact-sheets/detail/obesity-and-overweight
