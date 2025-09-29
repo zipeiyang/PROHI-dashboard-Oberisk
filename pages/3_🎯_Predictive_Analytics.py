@@ -192,7 +192,7 @@ def main():
     st.markdown("""
     This prediction model was trained on a comprehensive dataset of lifestyle and health factors.
     It uses advanced machine learning techniques to assess obesity risk based on:
-    - Demographic information (age, sex
+    - Demographic information (age, sex)
     - Eating habits (meal frequency, vegetable intake, high-calorie food consumption)
     - Lifestyle factors (physical activity, technology usage, transportation methods)
     - Family history and health behaviors
