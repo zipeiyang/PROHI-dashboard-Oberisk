@@ -17,13 +17,13 @@ st.markdown(
 """
 
     ## The Project
-    Obesity rates are rising globally, leading to increased cases of chronic diseases and higher healthcare costs. There is a growing need for early identification and prevention strategies. However, there is currently no accessible, personalized tool that uses both anthropometric data and lifestyle history (e.g., physical activity, diet) to predict an individual's risk of obesity. Therefore, stakeholders, especially healthcare providers, require clear, visualized statistics to understand obesity trends and contributing factors, which can support targeted health interventions. 
-    OBERISK is a desktop‑based dashboard that enables clinicians to estimate an adult patient’s obesity risk using a machine learning model trained on demographic, anthropometric, family‑history, and lifestyle features. The initial demonstration will run in Streamlit with a potential for future EHR integration and commercialization.
+    Obesity rates are on the rise globally, leading to increased cases of chronic diseases and higher healthcare costs. There is a growing need for early identification and prevention strategies. However, currently personalized tools that uses both anthropometric data (age, sex) and lifestyle factors (e.g., physical activity, diet) to predict an individual's risk of obesity are not widely available. Therefore, the general pubiic requires clear, visualized statistics to understand obesity trends and how their own lifestyle factors contirbute to their obesity risk, which can support and encourage preventive visits to health professionals such as dieticians. 
+    OBERISK is a desktop‑based dashboard that enables individuals to estimate their obesity risk using a machine learning model trained on demographic, family‑history, and lifestyle features. The initial demonstration will run in Streamlit with a potential for future EHR integration and commercialization. This tool was developed in partnership with Stockholm Region and Karolinska Institutet as part of their wellness initiative to help promote healthier lifestyles for Stockholm Lan's population.
 
     What OBERISK offers:
-    - Fast risk estimate
-    - Visualized feature effects to support counseling on modifiable risks.
-    - Configurable thresholds to adapt sensitivity and specificity to clinical priorities, for instances screening and diagnostic.
+    - Fast risk estimates
+    - Visualized feature effects to support easier understanding.
+    - A simple, easy-to-access tools that encourages individuals to evaluate their risk factors and take a proactive approach to their health and wellbeing.
 
 
     ## The Dataset
@@ -34,13 +34,14 @@ st.markdown(
     - At risk (1): Overweight I–II and Obesity I–III
     
     ### Important caveats about the label
-    The “obesity level” is derived directly from height and weight (BMI categories), it is not a clinical diagnosis. This introduces **label-definition leakage**: models that see height/weight will (correctly) learn BMI boundaries, and lifestyle features will contribute less to predictions of current status.
+    The “obesity level” is was derived directly from height and weight (BMI categories), which introduceda **label-definition leakage**: models that see height/weight will (correctly) learn BMI boundaries, and lifestyle features will contribute less to predictions of current status. Hence, to reduce this the model has been trained to predict obesity solely on lifestyle factors, family-history, as well as age and sex. To reduce the label-definition leakage, weight and height we dropped when training the model.
     
     ## Model Justification
     **Why binary classification?**
 
     - Clinically, the key fork in decisions is “screen and counsel intensively vs. routine prevention.” Binarizing (Normal/Underweight vs. Overweight/Obesity) aligns with that workflow and improves class balance for evaluation and threshold tuning.
     - It also simplifies calibration (well-calibrated risk probabilities) and operating point selection (e.g., high-recall screening).
+    - Additionally, it makes it simpler for the public to understand the model's output and to understand what their next steps could be. 
 
     **Why XGBoost (and why compare baselines)?**
 
