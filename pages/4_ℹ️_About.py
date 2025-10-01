@@ -41,7 +41,7 @@ st.markdown(
 
     - Clinically, the key fork in decisions is “screen and counsel intensively vs. routine prevention.” Binarizing (Normal/Underweight vs. Overweight/Obesity) aligns with that workflow and improves class balance for evaluation and threshold tuning.
     - It also simplifies calibration (well-calibrated risk probabilities) and operating point selection (e.g., high-recall screening).
-    - Additionally, it makes it simpler for the public to understand the model's output and to understand what their next steps could be. 
+    - Additionally, it makes it simpler for the individuals to understand the model's output and what next steps they can take for their health and wellbeing. 
 
     **Why XGBoost (and why compare baselines)?**
 
