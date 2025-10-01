@@ -21,9 +21,9 @@ st.markdown(
     OBERISK is a desktop‑based dashboard that enables individuals to estimate their obesity risk using a machine learning model trained on demographic, family‑history, and lifestyle features. The initial demonstration will run in Streamlit with a potential for future EHR integration and commercialization. This tool was developed in partnership with Stockholm Region and Karolinska Institutet as part of their wellness initiative to help promote healthier lifestyles for Stockholm Lan's population.
 
     What OBERISK offers:
-    - Fast risk estimates
+    - Fast risk estimates from the comfort of your own home. No appointment needed! No waiting time!
     - Visualized feature effects to support easier understanding.
-    - A simple, easy-to-access tools that encourages individuals to evaluate their risk factors and take a proactive approach to their health and wellbeing.
+    - A simple, easy-to-access tools encouraging individuals to evaluate and monitor their risk factors, facilitating a proactive approach to one's health and wellbeing.
 
 
     ## The Dataset
@@ -33,8 +33,8 @@ st.markdown(
     - No risk (0): Insufficient/Normal
     - At risk (1): Overweight I–II and Obesity I–III
     
-    ### Important caveats about the label
-    The “obesity level” is was derived directly from height and weight (BMI categories), which introduceda **label-definition leakage**: models that see height/weight will (correctly) learn BMI boundaries, and lifestyle features will contribute less to predictions of current status. Hence, to reduce this the model has been trained to predict obesity solely on lifestyle factors, family-history, as well as age and sex. To reduce the label-definition leakage, weight and height we dropped when training the model.
+    ### Important caveats about the dataset labels
+    The “obesity level” is was derived directly from height and weight (BMI categories), which introduceda **label-definition leakage**: models that see height/weight will (correctly) learn BMI boundaries, and lifestyle features will contribute less to predictions of current status. Therefore, to reduce this the Oberisk prediction model has been trained to predict obesity solely on lifestyle factors, family-history, as well as age and sex. Weight and height features were dropped from the prediction model to reduce the label-definition leakage, giving you a model that predicts obesity risk using lifestyle factors and not one that learns BMI boundaries from weight and height variables.
     
     ## Model Justification
     **Why binary classification?**
@@ -43,7 +43,7 @@ st.markdown(
     - It also simplifies calibration (well-calibrated risk probabilities) and operating point selection (e.g., high-recall screening).
     - Additionally, it makes it simpler for the individuals to understand the model's output and what next steps they can take for their health and wellbeing. 
 
-    **Why XGBoost (and why compare baselines)?**
+    **Why XGBoost (NOTE:RANDOM FOREST NOW?) (and why compare baselines)?**
 
     We evaluated Logistic Regression, Random Forest, XGBoost, and LightGBM using a consistent preprocessing pipeline (scaling numeric features; one-hot encoding categoricals) and stratified train/test splits. We selected XGBoost as the primary model because it:
     - Handles non-linearities and feature interactions between lifestyle, family history, and anthropometrics.
