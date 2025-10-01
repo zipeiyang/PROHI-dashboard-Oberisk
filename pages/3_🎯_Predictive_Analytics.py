@@ -119,8 +119,8 @@ def display_prediction_result(prediction, prediction_proba):
 def main():
     st.header("Obesity Risk Prediction")
     st.markdown("""
-    This tool predicts your risk of obesity based on your lifestyle and demographic factors.
-    Please provide your information below and click the 'Predict Risk' button to get your personalized assessment.
+    The Oberisk tool predicts your risk of obesity based on your lifestyle, demographic factors (age/sex), and family-history of obesity.
+    Please enter your information below and click the 'Predict Risk' button to get your personalized obesity risk assessment.
     """)
     
     # Load the pre-trained model
@@ -188,7 +188,7 @@ def main():
 
     # Add some information about the model
     st.markdown("---")
-    st.subheader("About the Prediction Model")
+    st.subheader("Information about the Prediction Model")
     st.markdown("""
     This prediction model was trained on a comprehensive dataset of lifestyle and health factors.
     It uses advanced machine learning techniques to assess an individual's obesity risk based on the following factors:
@@ -197,7 +197,8 @@ def main():
     - Lifestyle factors (physical activity, technology usage, transportation methods)
     - Family history and health behaviors
     
-    **Note:** This tool is for informational purposes only and should not replace professional medical advice.
+    **Note:** This tool is for informational purposes only and should only be used as a tool to help you understand how your lifestyle choices impact obesity risk. It DOES NOT replace professional medical advice. Please seek immediate medical attention and contact your healthcare provider if you are feeling unwell.
+     Your data will not be stored for any purposes. Please feel free to contact the team at Oberisk or our main sponsor Region Stockholm if you have any questions about this tool or would like to receive more information about it.       
     """)
 
 if __name__ == "__main__":
