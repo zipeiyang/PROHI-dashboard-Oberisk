@@ -7,13 +7,15 @@ Group members: Matija Matic, Alex Alfarone, Meilia Chrisandra, Anna Larsson, Zip
 
 ## Introduction
 
-Oberisk is an interactive web dashboard to.... 
+Oberisk is an interactive web dashboard that has been designed as part of a joint wellbeing and health promotion initiative between Region Stockholm and Karolinska Institutet. It is centered on giving the residents of Stockholm region a simple, easy-to-access tool that will enable them to take a proactive stance on their health and wellbeing.
 
-The problem detected was...
+The problem detected was that most current applications estimate obesity risk based on one's BMI, and not on factors like lifestyle choices and family history. 
 
-The proposed solution is valuable because...
+The proposed solution is valuable because Oberisk provides a new and innovative way of estimating obesity risk and does it using a user-friendly, accessible dashboard and provides a model that explains how the risk was calculated. This helps improve understanding of how today's choices impact tomorrow's obesity risk. 
 
 ## System description
+
+Oberisk has been created as a streamlit dashboard...
 
 ### Dependencies
 
