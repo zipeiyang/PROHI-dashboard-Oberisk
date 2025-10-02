@@ -66,8 +66,8 @@ To run the dashboard execute the following command:
 This logic resembles the expected pipeline, where the jupyter notebooks are used to iterate the data modeling part until a satisfactory trained model is created, and the streamlit scripts are only in charge of rendering the user-facing interface to generate the prediction for new data. In practice, the data science pipeline is completely independent from the web dashboard, and both are connected via the pre-trained model. 
 
 ## Contacts
-Matija Matic: matija.matic@stud.ki.se
-Alex Alfarone: alex.erik.alfarone@stud.ki.se
-Meilia Chrisandra: 
-Anna Larsson: 
-Zipei Yang: zipei.yang@stud.ki.se 
+Alex Alfarone: alex@oberisk.se
+Anna Larsson: anna@oberisk.se
+Matija Matic: matija@oberisk.se
+Meilia Chrisandra: meilia@oberisk.se
+Zipei Yang: zipei@oberisk.se
