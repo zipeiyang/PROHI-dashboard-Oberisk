@@ -9,7 +9,7 @@ import os
 import time
 
 # Set page configuration
-st.set_page_config(page_title="Predictive Analytics", layout="wide")
+st.set_page_config(page_title="Obesity Risk Factors", layout="wide")
 st.logo("./assets/oberisk_sidebar.png", size="large", icon_image="./assets/oberisk_logo_icon.png")
 
 # Define constants
