@@ -219,7 +219,7 @@ def render_diagnostic_page(df: pd.DataFrame, numeric_cols: List[str],
     **Explore complex relationships and interactions between multiple variables.**  
     This section provides advanced analytical techniques including diagnostic modeling
     and dimensionality reduction to uncover patterns and key drivers behind obesity levels. 
-    Select any diagnostic method below to begin your analysis.
+    Select a diagnostic method below to begin your analysis.
     """)
     
     # Create tabs for different analysis views

@@ -198,7 +198,7 @@ def main():
     - Family history and health behaviors
     
     **Note:** This tool is for informational purposes only and should only be used as a tool to help you understand how your lifestyle choices impact obesity risk. It DOES NOT replace professional medical advice. Please seek immediate medical attention and contact your healthcare provider if you are feeling unwell.
-     Your data will not be stored for any purposes. Please feel free to contact the team at Oberisk or our main sponsor Region Stockholm if you have any questions about this tool or would like to receive more information about it.       
+     Your data will not be stored for any purposes. Please feel free to contact the team at Oberisk or Region Stockholm if you have any questions about this tool or would like to receive more information about it.       
     """)
 
 if __name__ == "__main__":
