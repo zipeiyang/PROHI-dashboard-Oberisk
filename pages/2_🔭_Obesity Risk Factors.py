@@ -216,28 +216,38 @@ def render_diagnostic_page(df: pd.DataFrame, numeric_cols: List[str],
     """Render diagnostic analysis page"""
     st.header("Comprehensive Analysis: Multi-Feature Diagnostics")
     st.markdown("""
-    **Explore complex relationships and interactions between multiple variables.**  
-    This section provides advanced analytical techniques including diagnostic modeling
-    and dimensionality reduction to uncover patterns and key drivers behind obesity levels. 
-    Select a diagnostic method below to begin your analysis.
+    **Explore the complex relationships between various factors and obesity risk.**  
+    This section uses statistical methods to identify which factors have the strongest influence on obesity levels.
     """)
     
-    # Create tabs for different analysis views
+    # Add a friendly introduction with explanations
+    with st.expander("💡 **How to use this page**", expanded=True):
+        st.markdown("""
+        This page helps you understand which factors matter most for obesity risk. Here's how to use it:
+        
+        - **Choose an analysis type** - each shows different insights
+        - **Adjust the slider** to see more or fewer factors
+        - **Click the info icons** 🔍 next to each analysis for explanations
+        """)
+    
+    # Create tabs for different analysis views with user-friendly names
     analysis_type = st.radio(
-        "Select Analysis Type:",
-        ["Logistic Regression Coefficients", "Feature Association Strength", "PCA Visualization"],
+        "**Choose what you want to explore:**",
+        ["Key Factors by Obesity Level", "Most Influential Factors", "Data Patterns Overview"],
         horizontal=True,
-        key="analysis_selector"
+        key="analysis_selector",
+        help="Select what type of insights you'd like to see"
     )
     
     # Add a slider to control number of features to display
     total_features = len(numeric_cols) + len(categorical_cols)
     n_features = st.slider(
-        "Number of top features to display:",
+        "**Number of top factors to show:**",
         min_value=5,
         max_value=min(20, total_features),
         value=min(10, total_features),
-        key="feature_slider"
+        key="feature_slider",
+        help="Show more or fewer factors in the charts"
     )
     
     # Add progress bar and status message
@@ -245,23 +255,38 @@ def render_diagnostic_page(df: pd.DataFrame, numeric_cols: List[str],
     status_text = st.empty()
     
     # Execute diagnostic analysis
-    status_text.text("Running diagnostic analysis...")
+    status_text.text("🔬 Analyzing your data...")
     progress_bar.progress(25)
     
     results = perform_diagnostic_analysis(df, numeric_cols, categorical_cols, target)
     
     progress_bar.progress(75)
-    status_text.text("Analysis complete! Displaying results...")
+    status_text.text("📈 Preparing your results...")
     
     # Display different analysis results based on user selection
-    if analysis_type == "Logistic Regression Coefficients":
-        st.subheader("Multiclass Logistic Regression Coefficients")
+    if analysis_type == "Key Factors by Obesity Level":
+        st.subheader("Key Factors for Each Obesity Level")
+        
+        with st.expander("🔍 **What does this analysis show?**", expanded=False):
+            st.markdown("""
+            **In simple terms:** This shows which factors are most strongly linked to **each specific obesity level**.
+            
+            **How to read the chart:**
+            - **Longer bars** = stronger influence on that obesity level
+            - **Blue bars** = numerical factors (like age, weight)
+            - **Green bars** = categorical factors (like family history, smoking)
+            - **Positive values** = factor increases risk of that obesity level
+            - **Negative values** = factor decreases risk of that obesity level
+            
+            **Example:** If "physical activity" has a long negative bar for "Obesity Type III", it means more physical activity strongly reduces the risk of severe obesity.
+            """)
         
         # Let user select which class to view
         selected_class = st.selectbox(
-            "Select obesity class to view:",
+            "**Select obesity level to explore:**",
             results['logreg_coefficients'].index.tolist(),
-            key="class_selector"
+            key="class_selector",
+            help="Choose which obesity level you want to understand better"
         )
         
         # Display coefficients for selected class
@@ -271,27 +296,50 @@ def render_diagnostic_page(df: pd.DataFrame, numeric_cols: List[str],
         # Create horizontal bar chart
         fig, ax = plt.subplots(figsize=(10, 6))
         colors = ['#A5B8D6' if f in numeric_cols else '#A5C2A7' for f in top_coefs.index]
-        ax.barh(range(len(top_coefs)), top_coefs.values, color=colors)
+        
+        # Use actual coefficient values (not absolute) to show direction
+        actual_values = [coefs[f] for f in top_coefs.index]
+        bars = ax.barh(range(len(top_coefs)), actual_values, color=colors)
+        
+        # Add value labels on bars
+        for i, (bar, value) in enumerate(zip(bars, actual_values)):
+            ax.text(bar.get_width() + (0.01 if value >= 0 else -0.01), 
+                   bar.get_y() + bar.get_height()/2, 
+                   f'{value:.3f}', 
+                   ha='left' if value >= 0 else 'right', 
+                   va='center', fontsize=8)
+        
         ax.set_yticks(range(len(top_coefs)))
         ax.set_yticklabels(top_coefs.index)
         ax.invert_yaxis()
-        ax.set_xlabel('Coefficient magnitude (abs)')
-        ax.set_title(f'Top {n_features} features for {selected_class}')
-        legend_elements = [Patch(facecolor='#A5B8D6', label='Numerical'), 
-                         Patch(facecolor='#A5C2A7', label='Categorical')]
+        ax.set_xlabel('Influence Strength (Positive = Increases Risk, Negative = Decreases Risk)')
+        ax.set_title(f'Top Factors Influencing {selected_class}')
+        ax.axvline(x=0, color='gray', linestyle='-', alpha=0.3)
+        
+        legend_elements = [Patch(facecolor='#A5B8D6', label='Numerical Factors'), 
+                         Patch(facecolor='#A5C2A7', label='Lifestyle & Background Factors')]
         ax.legend(handles=legend_elements, loc='lower right')
         plt.tight_layout()
         st.pyplot(fig)
         
-        # Display data table
-        st.dataframe(pd.DataFrame({
-            'Feature': top_coefs.index,
-            'Coefficient': [coefs[f] for f in top_coefs.index],
-            'Absolute Value': top_coefs.values
-        }).reset_index(drop=True))
+        # Interpretation help
+        st.info(f"💡 **Interpretation help for {selected_class}:** Factors on the **right side** increase risk, while factors on the **left side** decrease risk. The longer the bar, the stronger the effect.")
         
-    elif analysis_type == "Feature Association Strength":
-        st.subheader("Feature Association Strength with Obesity Levels")
+    elif analysis_type == "Most Influential Factors":
+        st.subheader("Overall Most Influential Factors")
+        
+        with st.expander("🔍 **What does this analysis show?**", expanded=False):
+            st.markdown("""
+            **In simple terms:** This ranks all factors by their **overall importance** across all obesity levels.
+            
+            **How to read the chart:**
+            - **Longer bars** = more important factors overall
+            - **Blue bars** = numerical factors (like age, meals per day)
+            - **Green bars** = categorical factors (like family history, smoking)
+            - The score shows how strongly each factor is related to obesity in general
+            
+            **This helps you answer:** "Which feature changes would have the biggest impact on obesity risk?"
+            """)
         
         # Display association strength
         eta_df = results['association_strength']
@@ -300,23 +348,47 @@ def render_diagnostic_page(df: pd.DataFrame, numeric_cols: List[str],
         # Create horizontal bar chart
         fig, ax = plt.subplots(figsize=(10, 6))
         colors = ['#A5B8D6' if c in numeric_cols else '#A5C2A7' for c in top_features.index]
-        ax.barh(range(len(top_features)), top_features['Association_Strength'], color=colors)
+        bars = ax.barh(range(len(top_features)), top_features['Association_Strength'], color=colors)
+        
+        # Add value labels on bars
+        for i, (bar, value) in enumerate(zip(bars, top_features['Association_Strength'])):
+            ax.text(bar.get_width() + 0.01, bar.get_y() + bar.get_height()/2, 
+                   f'{value:.3f}', ha='left', va='center', fontsize=8)
+        
         ax.set_yticks(range(len(top_features)))
         ax.set_yticklabels(top_features.index)
         ax.invert_yaxis()
-        ax.set_xlabel('Association Strength')
-        ax.set_title(f'Top {n_features} features by association strength')
-        legend_elements = [Patch(facecolor='#A5B8D6', label='Numeric (Eta^2)'), 
-                         Patch(facecolor='#A5C2A7', label="Categorical (Cramer's V)")]
+        ax.set_xlabel('Overall Importance Score')
+        ax.set_title(f'Top {n_features} Most Important Factors for Obesity Risk')
+        
+        legend_elements = [Patch(facecolor='#A5B8D6', label='Numerical Factors'), 
+                         Patch(facecolor='#A5C2A7', label='Lifestyle & Background Factors')]
         ax.legend(handles=legend_elements, loc='lower right')
         plt.tight_layout()
         st.pyplot(fig)
         
-        # Display data table
-        st.dataframe(top_features)
+        # Practical implications
+        if len(top_features) > 0:
+            top_factor = top_features.index[0]
+            top_score = top_features.iloc[0, 0]
+            st.info(f"💡 **Key Insight:** **{top_factor}** is the most important factor (score: {top_score:.3f}). Focusing on this could have the biggest impact on obesity risk.")
         
-    elif analysis_type == "PCA Visualization":
-        st.subheader("Principal Component Analysis (PCA) Visualization")
+    elif analysis_type == "Data Patterns Overview":
+        st.subheader("Data Patterns Overview")
+        
+        with st.expander("🔍 **What does this analysis show?**", expanded=False):
+            st.markdown("""
+            **In simple terms:** This creates a "map" of all the people in the dataset, showing how different obesity levels group together based on their factors.
+            
+            **How to read the chart:**
+            - **Each dot** = one person in the dataset
+            - **Colors** = different obesity levels
+            - **Similar positions** = similar feature patterns
+            - **Grouped dots** = people with similar obesity levels and features
+            - **Arrows** = show which factors influence the pattern the most
+            
+            **This helps you see:** "Do people with similar factors tend to have similar obesity levels?"
+            """)
         
         if 'pca' in results:
             pca_results = results['pca']
@@ -326,10 +398,11 @@ def render_diagnostic_page(df: pd.DataFrame, numeric_cols: List[str],
             
             # Let user select which classes to highlight
             selected_classes = st.multiselect(
-                "Select classes to highlight:",
+                "**Focus on specific obesity levels:**",
                 results['label_encoder'].classes_.tolist(),
                 default=results['label_encoder'].classes_.tolist()[:3],
-                key="pca_class_selector"
+                key="pca_class_selector",
+                help="Select which obesity levels to highlight (others will be faded)"
             )
             
             # Create PCA scatter plot
@@ -341,8 +414,9 @@ def render_diagnostic_page(df: pd.DataFrame, numeric_cols: List[str],
                 mask = (le.transform(df[target]) == i)
                 alpha = 0.8 if class_name in selected_classes else 0.2
                 size = 60 if class_name in selected_classes else 30
+                label = class_name if class_name in selected_classes else None
                 ax.scatter(X_pca[mask, 0], X_pca[mask, 1], 
-                          label=class_name, alpha=alpha, s=size)
+                          label=label, alpha=alpha, s=size, c=COLORS[i % len(COLORS)])
             
             # Draw arrows for important variables
             important_vars = ['height', 'weight', 'age', 'technological_devices', 'physical_activity']
@@ -351,50 +425,69 @@ def render_diagnostic_page(df: pd.DataFrame, numeric_cols: List[str],
                     pc1_load = feature_weights.loc['PC1', var]
                     pc2_load = feature_weights.loc['PC2', var]
                     ax.arrow(0, 0, pc1_load*3, pc2_load*3, 
-                            head_width=0.05, head_length=0.05, fc='red', ec='red')
-                    ax.text(pc1_load*3.2, pc2_load*3.2, var, color='red')
+                            head_width=0.05, head_length=0.05, fc='red', ec='red', alpha=0.7)
+                    ax.text(pc1_load*3.2, pc2_load*3.2, var, color='red', fontsize=9)
             
-            ax.set_xlabel(f'PC1 ({explained_variance[0]:.1%} explained variance)')
-            ax.set_ylabel(f'PC2 ({explained_variance[1]:.1%} explained variance)')
-            ax.set_title('PCA: 2D projection of observations')
-            ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+            ax.set_xlabel(f'Pattern Dimension 1 ({explained_variance[0]:.1%} of patterns)')
+            ax.set_ylabel(f'Pattern Dimension 2 ({explained_variance[1]:.1%} of patterns)')
+            ax.set_title('Lifestyle Patterns and Obesity Levels')
+            ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', title="Obesity Levels")
+            ax.grid(True, alpha=0.3)
             plt.tight_layout()
             st.pyplot(fig)
             
+            # Pattern interpretation
+            st.info("💡 **Pattern interpretation:** When dots of the same color cluster together, it means people with that obesity level have similar lifestyles. Arrows show which factors create these patterns.")
+            
             # Display top loadings for each principal component
-            st.write("Top feature loadings per principal component:")
+            st.write("**Key factors shaping the patterns:**")
             
             col1, col2 = st.columns(2)
             
             with col1:
-                st.write("PC1 top features:")
+                st.write("**Dimension 1** - Main pattern drivers:")
                 pc1_weights = feature_weights.loc['PC1'].abs().sort_values(ascending=False).head(n_features)
                 st.dataframe(pd.DataFrame({
-                    'Feature': pc1_weights.index,
-                    'Weight': pc1_weights.values
+                    'Factor': pc1_weights.index,
+                    'Influence': pc1_weights.values
                 }).reset_index(drop=True))
             
             with col2:
-                st.write("PC2 top features:")
+                st.write("**Dimension 2** - Secondary pattern drivers:")
                 pc2_weights = feature_weights.loc['PC2'].abs().sort_values(ascending=False).head(n_features)
                 st.dataframe(pd.DataFrame({
-                    'Feature': pc2_weights.index,
-                    'Weight': pc2_weights.values
+                    'Factor': pc2_weights.index,
+                    'Influence': pc2_weights.values
                 }).reset_index(drop=True))
                 
         elif 'pca_error' in results:
-            st.error(f"PCA failed: {results['pca_error']}")
+            st.error(f"Pattern analysis failed: {results['pca_error']}")
     
     # Complete progress bar
     progress_bar.progress(100)
-    status_text.text("Analysis complete!")
+    status_text.text("✅ Analysis complete!")
     
-    # Add some additional statistics
-    with st.expander("View additional statistics"):
-        st.write(f"Total features analyzed: {len(numeric_cols) + len(categorical_cols)}")
-        st.write(f"Numerical features: {len(numeric_cols)}")
-        st.write(f"Categorical features: {len(categorical_cols)}")
-        st.write(f"Total variance explained by PCA: {sum(results['pca']['explained_variance_ratio']):.2%}")
+    # Add summary and practical takeaways
+    with st.expander(" **Summary**", expanded=False):
+        st.markdown("""
+        - The most influential factors suggest whose changes could have the biggest impact
+        - Different factors matter for different obesity levels  
+
+        **Remember:** These are statistical patterns from group data. Individual results may vary, and professional medical advice should always be sought for health decisions.
+        """)
+    
+    # Add some additional statistics in a compact way
+    with st.expander(" **Technical Details**", expanded=False):
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.metric("Total Factors Analyzed", f"{len(numeric_cols) + len(categorical_cols)}")
+        with col2:
+            st.metric("Numerical Factors", f"{len(numeric_cols)}")
+        with col3:
+            st.metric("Lifestyle Factors", f"{len(categorical_cols)}")
+        
+        if 'pca' in results:
+            st.write(f"**Pattern Coverage:** This analysis captures {sum(results['pca']['explained_variance_ratio']):.1%} of the lifestyle patterns in the data.")
 
 # Main application
 def main():

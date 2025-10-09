@@ -18,6 +18,16 @@ CATEGORY_ORDER = [
     'Overweight_Level_II', 'Obesity_Type_I', 'Obesity_Type_II', 'Obesity_Type_III'
 ]
 
+# Initialize session state with proper structure
+if "prediction_made" not in st.session_state:
+    st.session_state.prediction_made = False
+if "counterfactual_values" not in st.session_state:
+    st.session_state.counterfactual_values = {}
+if "reset_counter" not in st.session_state:
+    st.session_state.reset_counter = 0
+if "current_user_input" not in st.session_state:
+    st.session_state.current_user_input = None
+
 # Load pre-trained model
 @st.cache_resource
 def load_model():
@@ -40,7 +50,7 @@ def load_model():
 # User input form - moved to main page
 def get_user_input():
     """Create user input form in main page"""
-    st.header("Input Your Information")
+    st.subheader("Input Your Information")
     
     # Create two columns for better layout
     col1, col2 = st.columns(2)
@@ -48,9 +58,8 @@ def get_user_input():
     with col1:
         st.subheader("Basic Information")
         age = st.slider("Age", 18, 80, 30)
-        # height = st.slider("Height (m)", 1.4, 2.2, 1.7)
-        # weight = st.slider("Weight (kg)", 40.0, 150.0, 70.0)
         sex = st.selectbox("Sex", ["Male", "Female"])
+        family_history = st.selectbox("Family history of overweight", ["yes", "no"])
         
         st.subheader("Eating Habits")
         veggie_per_meal = st.slider("Vegetables per meal", 1.0, 3.0, 2.0)
@@ -62,8 +71,7 @@ def get_user_input():
     with col2:
         st.subheader("Lifestyle Factors")
         physical_activity = st.slider("Physical activity (days/week)", 0.0, 3.0, 1.0)
-        technological_devices = st.slider("Technology devices usage (hours/day)", 0.0, 2.0, 1.0)
-        family_history = st.selectbox("Family history of overweight", ["yes", "no"])
+        technological_devices = st.slider("Technology devices usage (hours/day)", 0.0, 2.0, 1.0)        
         smoking = st.selectbox("Smoking", ["yes", "no"])
         monitor_calorie = st.selectbox("Monitor calorie intake", ["yes", "no"])
         freq_alcohol = st.selectbox("Alcohol frequency", ["Sometimes", "Frequently", "Always", "no"])
@@ -72,8 +80,6 @@ def get_user_input():
     # Create a DataFrame from user input
     user_data = {
         'age': age,
-        # 'height': height,
-        # 'weight': weight,
         'veggie_per_meal': veggie_per_meal,
         'meals_daily': meals_daily,
         'water_daily': water_daily,
@@ -90,6 +96,22 @@ def get_user_input():
     }
     
     return pd.DataFrame(user_data, index=[0])
+
+def initialize_counterfactual_values(user_input):
+    """Initialize counterfactual values from user input"""
+    return {
+        'physical_activity': float(user_input["physical_activity"].iloc[0]),
+        'technological_devices': float(user_input["technological_devices"].iloc[0]),
+        'meals_daily': float(user_input["meals_daily"].iloc[0]),
+        'veggie_per_meal': float(user_input["veggie_per_meal"].iloc[0]),
+        'water_daily': float(user_input["water_daily"].iloc[0]),
+        'freq_snack': user_input["freq_snack"].iloc[0],
+        'freq_alcohol': user_input["freq_alcohol"].iloc[0],
+        'monitor_calorie': user_input["monitor_calorie"].iloc[0],
+        'often_high_calorie_intake': user_input["often_high_calorie_intake"].iloc[0],
+        'smoking': user_input["smoking"].iloc[0],
+        'transport': user_input["transport"].iloc[0]
+    }
 
 # Display prediction results
 def display_prediction_result(prediction, prediction_proba):
@@ -135,6 +157,9 @@ def main():
     # Get user input
     user_input = get_user_input()
     
+    # Store current user input in session state
+    st.session_state.current_user_input = user_input
+    
     # Display user input
     st.subheader("Your Input Summary")
     st.dataframe(user_input)
@@ -149,7 +174,7 @@ def main():
             for i in range(100):
                 progress_bar.progress(i + 1)
                 status_text.text(f"Processing... {i+1}%")
-                time.sleep(0.02)  # Simulate processing time
+                time.sleep(0.02)
             
             status_text.text("Analysis complete!")
             time.sleep(0.5)
@@ -159,26 +184,15 @@ def main():
                 prediction = model.predict(user_input)
                 prediction_proba = model.predict_proba(user_input)
                 
-                # Display results
-                st.subheader("Prediction Result")
-                display_prediction_result(prediction, prediction_proba)
+                # Store everything in session state
+                st.session_state.user_input = user_input
+                st.session_state.prediction = prediction
+                st.session_state.prediction_proba = prediction_proba
+                st.session_state.prediction_made = True
                 
-                # Additional information
-                with st.expander("View detailed analysis"):
-                    st.write("Prediction probabilities:")
-                    proba_df = pd.DataFrame({
-                        'Class': ['No Risk', 'At Risk'],
-                        'Probability': prediction_proba[0]
-                    })
-                    st.dataframe(proba_df)
-                    
-                    # Simple visualization
-                    fig, ax = plt.subplots(figsize=(6, 4))
-                    ax.barh(['No Risk', 'At Risk'], prediction_proba[0], color=['green', 'red'])
-                    ax.set_xlabel('Probability')
-                    ax.set_title('Risk Probability Distribution')
-                    st.pyplot(fig)
-                    
+                # Initialize counterfactual values with original values
+                st.session_state.counterfactual_values = initialize_counterfactual_values(user_input)
+
             except Exception as e:
                 st.error(f"Error making prediction: {e}")
         
@@ -186,6 +200,32 @@ def main():
         progress_bar.empty()
         status_text.empty()
 
+    # Display prediction results if available
+    if st.session_state.prediction_made:
+        st.subheader("Prediction Result")
+        display_prediction_result(
+            st.session_state.prediction, 
+            st.session_state.prediction_proba
+        )
+
+        # Additional information
+        with st.expander("View detailed analysis"):
+            st.write("Prediction probabilities:")
+            proba_df = pd.DataFrame({
+                'Class': ['No Risk', 'At Risk'],
+                'Probability': st.session_state.prediction_proba[0]
+            })
+            st.dataframe(proba_df)
+
+            col1, col2, col3 = st.columns([1, 2, 1])
+            with col2:
+                fig, ax = plt.subplots(figsize=(4, 2))
+                ax.barh(['No Risk', 'At Risk'], st.session_state.prediction_proba[0], color=['green', 'red'])
+                ax.set_xlabel('Probability')
+                ax.set_title('Risk Probability Distribution')
+                plt.tight_layout()
+                st.pyplot(fig)
+    
     # Add some information about the model
     st.markdown("---")
     st.subheader("Information about the Prediction Model")
@@ -200,6 +240,127 @@ def main():
     **Note:** This tool is for informational purposes only and should only be used as a tool to help you understand how your lifestyle choices impact obesity risk. It DOES NOT replace professional medical advice. Please seek immediate medical attention and contact your healthcare provider if you are feeling unwell.
      Your data will not be stored for any purposes. Please feel free to contact the team at Oberisk or Region Stockholm if you have any questions about this tool or would like to receive more information about it.       
     """)
+
+    # Counterfactual Analysis
+    if st.session_state.prediction_made:
+        st.markdown("---")
+        st.subheader("If You Do Some Changes now...")
+        st.markdown("""
+        Adjust the sliders below to explore **how changing your habits might affect your predicted obesity risk**.  
+        This interactive tool lets you simulate different lifestyle scenarios and instantly see the updated prediction.
+        """)
+
+        # Get current counterfactual values from session state
+        cf_values = st.session_state.counterfactual_values
+        
+        # Use reset counter to force widget updates
+        reset_suffix = f"_reset_{st.session_state.reset_counter}"
+        
+        col1, col2 = st.columns(2)
+
+        with col1:
+            # Update session state values when sliders change
+            cf_values['physical_activity'] = st.slider(
+                "Physical activity (days/week)",
+                0.0, 3.0, cf_values['physical_activity'], step=0.5, key=f"cf_physical_activity{reset_suffix}"
+            )
+            cf_values['technological_devices'] = st.slider(
+                "Technology use (hours/day)",
+                0.0, 2.0, cf_values['technological_devices'], step=0.5, key=f"cf_technological_devices{reset_suffix}"
+            )
+            cf_values['meals_daily'] = st.slider(
+                "Meals per day", 1.0, 4.0, cf_values['meals_daily'], step=0.5, key=f"cf_meals_daily{reset_suffix}"
+            )
+            cf_values['veggie_per_meal'] = st.slider(
+                "Vegetables per meal", 1.0, 3.0, cf_values['veggie_per_meal'], step=0.5, key=f"cf_veggie_per_meal{reset_suffix}"
+            )
+            cf_values['water_daily'] = st.slider(
+                "Water intake (liters/day)",
+                1.0, 3.0, cf_values['water_daily'], step=0.5, key=f"cf_water_daily{reset_suffix}"
+            )
+
+        with col2:
+            cf_values['freq_snack'] = st.selectbox(
+                "Snack frequency", ["no", "Sometimes", "Frequently", "Always"],
+                index=["no", "Sometimes", "Frequently", "Always"].index(cf_values['freq_snack']),
+                key=f"cf_freq_snack{reset_suffix}"
+            )
+            cf_values['freq_alcohol'] = st.selectbox(
+                "Alcohol frequency", ["no", "Sometimes", "Frequently", "Always"],
+                index=["no", "Sometimes", "Frequently", "Always"].index(cf_values['freq_alcohol']),
+                key=f"cf_freq_alcohol{reset_suffix}"
+            )
+            cf_values['monitor_calorie'] = st.selectbox(
+                "Monitor calorie intake", ["yes", "no"],
+                index=["yes", "no"].index(cf_values['monitor_calorie']),
+                key=f"cf_monitor_calorie{reset_suffix}"
+            )
+            cf_values['often_high_calorie_intake'] = st.selectbox(
+                "Often high calorie intake", ["yes", "no"],
+                index=["yes", "no"].index(cf_values['often_high_calorie_intake']),
+                key=f"cf_often_high_calorie_intake{reset_suffix}"
+            )
+            cf_values['smoking'] = st.selectbox(
+                "Smoking", ["yes", "no"],
+                index=["yes", "no"].index(cf_values['smoking']),
+                key=f"cf_smoking{reset_suffix}"
+            )
+            cf_values['transport'] = st.selectbox(
+                "Transportation method", ["Public_Transportation", "Walking", "Automobile", "Motorbike", "Bike"],
+                index=["Public_Transportation", "Walking", "Automobile", "Motorbike", "Bike"].index(cf_values['transport']),
+                key=f"cf_transport{reset_suffix}"
+            )
+
+        # Update session state
+        st.session_state.counterfactual_values = cf_values
+
+        # Create counterfactual input DataFrame
+        cf_input = st.session_state.user_input.copy()
+        for key, value in cf_values.items():
+            cf_input[key] = value
+
+        # Predict again using modified inputs
+        try:
+            cf_pred = model.predict(cf_input)
+            cf_proba = model.predict_proba(cf_input)[0]
+
+            st.markdown("### Updated Prediction with New Parameters")
+            st.write(f"**New Predicted Risk:** {'High' if cf_pred[0]==1 else 'Low'} "
+                    f"({cf_proba[1]*100:.2f}% chance of obesity risk)")
+
+            delta = cf_proba[1] - st.session_state.prediction_proba[0][1]
+            if delta > 0.01:  # Add threshold to avoid tiny floating point changes
+                st.error(f"⚠️ Risk increased by {delta*100:.1f}% after changes.")
+            elif delta < -0.01:
+                st.success(f"✅ Risk decreased by {abs(delta)*100:.1f}% after changes.")
+            else:
+                st.info("No significant change in predicted risk.")
+
+            # Reset button
+            if st.button("Reset to Original", key=f"reset_button{reset_suffix}"):
+                st.session_state.counterfactual_values = initialize_counterfactual_values(st.session_state.user_input)
+                st.session_state.reset_counter += 1
+                st.rerun()
+
+            # Visualization
+            st.markdown("**Comparison of Original vs Adjusted Prediction**")
+            col1, col2, col3 = st.columns([1, 2, 1])
+            with col2:
+                fig, ax = plt.subplots(figsize=(4, 2))
+                bars = ax.barh(["Original", "Adjusted"], 
+                              [st.session_state.prediction_proba[0][1], cf_proba[1]], 
+                              color=["gray", "orange"])
+                ax.set_xlim(0, 1)
+                ax.set_xlabel("Probability of High Obesity Risk")
+                ax.bar_label(bars, fmt="%.2f", padding=3)
+                st.pyplot(fig)
+
+        except Exception as e:
+            st.error(f"Error during counterfactual analysis: {e}")
+    else:
+        st.markdown("---")
+        st.subheader("If You Do Some Changes now...")
+        st.warning("Please run a prediction first to use the counterfactual analysis feature.")
 
 if __name__ == "__main__":
     main()

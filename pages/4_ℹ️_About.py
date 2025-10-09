@@ -11,7 +11,10 @@ st.logo("./assets/oberisk_sidebar.png", size="large", icon_image="./assets/oberi
 
 st.write("# About")
 
-st.image("./assets/oberisk_side.png", use_container_width=False)
+st.image("./assets/oberisk_side.png", use_container_width=False, width=300)
+
+
+
 
 st.markdown(
 """
@@ -33,30 +36,63 @@ st.markdown(
     - No risk (0): Insufficient/Normal
     - At risk (1): Overweight I–II and Obesity I–III
     
-    ### Important caveats about the dataset labels
-    The “obesity level” is was derived directly from height and weight (BMI categories), which introduceda **label-definition leakage**: models that see height/weight will (correctly) learn BMI boundaries, and lifestyle features will contribute less to predictions of current status. Therefore, to reduce this the Oberisk prediction model has been trained to predict obesity solely on lifestyle factors, family-history, as well as age and sex. Weight and height features were dropped from the prediction model to reduce the label-definition leakage, giving you a model that predicts obesity risk using lifestyle factors and not one that learns BMI boundaries from weight and height variables.
-    
+"""
+
+)
+
+st.warning(
+"""
+     ⚠️ **Important caveats about the dataset labels**
+
+    The "obesity level" was derived directly from height and weight (BMI categories), which introduced a **label-definition leakage**: models that see height/weight will (correctly) learn BMI boundaries, and lifestyle features will contribute less to predictions of current status.    
+        
+    Therefore, to reduce this the Oberisk prediction model has been trained to predict obesity **solely on lifestyle factors, family-history, as well as age and sex**. Weight and height features were dropped from the prediction model to reduce the label-definition leakage, giving you a model that predicts obesity risk using lifestyle factors and not one that learns BMI boundaries from weight and height variables.
+"""
+
+)
+
+st.markdown(
+"""
     ## Model Justification
     **Why binary classification?**
 
-    - Clinically, the key fork in decisions is “screen and counsel intensively vs. routine prevention.” Binarizing (Normal/Underweight vs. Overweight/Obesity) aligns with that workflow and improves class balance for evaluation and threshold tuning.
+    - Clinically, the key fork in decisions is "screen and counsel intensively vs. routine prevention." Binarizing (Normal/Underweight vs. Overweight/Obesity) aligns with that workflow and improves class balance for evaluation and threshold tuning.
     - It also simplifies calibration (well-calibrated risk probabilities) and operating point selection (e.g., high-recall screening).
-    - Additionally, it makes it simpler for the individuals to understand the model's output and what next steps they can take for their health and wellbeing. 
+    - Additionally, it makes it simpler for the individuals to understand the model's output and what next steps they can take for their health and wellbeing.
 
-    **Why XGBoost (NOTE:RANDOM FOREST NOW?) (and why compare baselines)?**
+    **Why Random Forest?**
 
-    We evaluated Logistic Regression, Random Forest, XGBoost, and LightGBM using a consistent preprocessing pipeline (scaling numeric features; one-hot encoding categoricals) and stratified train/test splits. We selected XGBoost as the primary model because it:
-    - Handles non-linearities and feature interactions between lifestyle, family history, and anthropometrics.
-    - Is robust to mixed data types and class imbalance.
-    - Trains quickly, supports probability calibration, and deploys easily in Streamlit.
+    We evaluated Logistic Regression, Decision Tree, Random Forest, Support Vector Machines, K-Nearest Neighbor, XGBoost, and LightGBM using a consistent preprocessing pipeline (scaling numeric features; one-hot encoding categoricals) and stratified train/test splits. We selected **Random Forest** as the primary model because it:
 
-    **Evaluation & operating points**
+    - Robust performance: Demonstrated strong predictive accuracy and generalization across diverse patient profiles
+    - Handles complex interactions: Naturally captures non-linear relationships and feature interactions between lifestyle factors, family history, and anthropometric measurements
+    - Feature importance: Provides interpretable feature importance scores that align with clinical domain knowledge
+    - Robust to outliers and noise: Handles mixed data types effectively without extensive preprocessing
+    - Balanced performance: Consistently achieved strong results across multiple evaluation metrics while maintaining computational efficiency
+
+    **Model interpretability**
+
+    We employed multiple interpretability approaches to ensure model transparency and clinical relevance:
+
+    SHAP Analysis (Model Development Phase):
+    - Global feature importance: Identified key drivers of obesity risk across the entire population, including family history, physical activity levels, and dietary patterns
+    - Local explanations: Provided individual-level insights into how each feature contributes to specific predictions
+    - Interaction effects: Revealed complex relationships between lifestyle factors and their combined impact on obesity risk
+    - Model validation: Confirmed that the model's decision-making aligns with established clinical knowledge
+
+    Counterfactual Analysis (Clinical Application):
+    - Actionable insights: Allows users to directly explore "what-if" scenarios by modifying lifestyle factors in real-time
+    - Personalized recommendations: Shows how specific behavior changes might impact individual obesity risk
+    - Interactive learning: Engages users in understanding the relationship between their choices and health outcomes
+    - Clinical relevance: Mimics real-world counseling conversations where providers discuss potential benefits of lifestyle modifications
+
+    **Evaluation points**
 
     For each model we report:
-    - Accuracy, Precision, Recall, F1, ROC curve and AUC on a held-out test set.
-    - Confusion matrix with configurable thresholds so clinics can prioritize:
-    - High recall (catch more at-risk patients; acceptable more false positives), or
-    - Higher precision (reduce unnecessary referrals).
+    - Accuracy, Precision, Recall, F1, ROC curve and AUC on a held-out test set
+    - Confusion matrix with configurable thresholds
+    - SHAP analysis for model interpretability and feature importance validation
+    - Counterfactual analysis for personalized risk modification guidance
 
     ## Team OBERISK
     *Alex Anna Matija Meilia Zipei*
