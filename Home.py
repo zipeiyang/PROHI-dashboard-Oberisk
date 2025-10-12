@@ -132,4 +132,3 @@ st.markdown('</div>', unsafe_allow_html=True)
 
 if st.button("Calculate risk", help="Input your patient data to predict the risk", type="primary", use_container_width=True):
     st.switch_page("pages/3_🎯_Predictive_Analytics.py")
-    streamlit run Home.py
