@@ -58,6 +58,18 @@ COLORS = [
     "#3276C4",
     "#1F9CA3",
 ]
+<<<<<<< Updated upstream
+COLORS = [
+    "#E05E00",
+    "#FFB26F",
+    "#FFD0AA",
+    "#9BC1FF",
+    "#4284FF",
+    "#3276C4",
+    "#1F9CA3",
+]
+=======
+>>>>>>> Stashed changes
 
 VARIABLE_FEATURES = [
     'age', 'height', 'weight', 'veggie_per_meal', 'meals_daily', 'water_daily',
@@ -469,7 +481,7 @@ def render_overview(df: pd.DataFrame, numeric_cols: List[str], categorical_cols:
 
 
 def render_explorer(df: pd.DataFrame, numeric_cols: List[str], categorical_cols: List[str]):
-    st.title("🔎 Explore a factors")
+    st.title("🔎 Explore a factor")
     st.caption("Pick one factor to see how it relates to obesity level.")
 
     all_vars = VARIABLE_FEATURES.copy()
@@ -583,7 +595,7 @@ def main():
                  type="primary" if st.session_state.page == "Overview" else "secondary",
                  use_container_width=True):
         st.session_state.page = "Overview"
-    if b2.button("Explore factor",
+    if b2.button("Explore factors",
                  type="primary" if st.session_state.page == "Explorer" else "secondary",
                  use_container_width=True):
         st.session_state.page = "Explorer"
