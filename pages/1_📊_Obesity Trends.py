@@ -58,18 +58,6 @@ COLORS = [
     "#3276C4",
     "#1F9CA3",
 ]
-<<<<<<< Updated upstream
-COLORS = [
-    "#E05E00",
-    "#FFB26F",
-    "#FFD0AA",
-    "#9BC1FF",
-    "#4284FF",
-    "#3276C4",
-    "#1F9CA3",
-]
-=======
->>>>>>> Stashed changes
 
 VARIABLE_FEATURES = [
     'age', 'height', 'weight', 'veggie_per_meal', 'meals_daily', 'water_daily',
@@ -209,7 +197,6 @@ def plot_numeric_by_level(df: pd.DataFrame, var: str, kind: str = "box") -> plt.
     fig.tight_layout()
     return fig
 
-<<<<<<< Updated upstream
 def plot_numeric_distribution(df: pd.DataFrame, x_col: str, y_col: str, plot_type: str = 'box') -> plt.Figure:
     fig = plt.figure(figsize=(8, 6))
     if plot_type == 'box':
@@ -267,22 +254,6 @@ def plot_scatter_age_bmi(df: pd.DataFrame) -> plt.Figure:
     plt.ylabel('BMI')
     plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
     plt.grid(True, alpha=0.3)
-=======
-def plot_age_small_multiples(df: pd.DataFrame) -> plt.Figure:
-    g = create_age_groups(df)
-    fig, axes = plt.subplots(2, 4, figsize=(12, 6))
-    axes = axes.flatten()
-    order_display = [label_cat(c) for c in CATEGORY_ORDER]
-    for i, cat in enumerate(order_display):
-        age_counts = g[g["bmi_category_display"] == cat]['age_group'].value_counts().sort_index()
-        axes[i].bar(age_counts.index.astype(str), age_counts.values, color=COLORS[i], alpha=0.85)
-        axes[i].set_title(cat, fontsize=10)
-        axes[i].tick_params(axis='x', rotation=45)
-        axes[i].set_ylabel('Count')
-    for j in range(len(order_display), len(axes)):
-        axes[j].set_visible(False)
-    plt.suptitle('Age groups distribution within each obesity level')
->>>>>>> Stashed changes
     plt.tight_layout()
     return fig
 
@@ -488,7 +459,6 @@ def render_explorer(df: pd.DataFrame, numeric_cols: List[str], categorical_cols:
     var = st.selectbox("Choose a factor", options=all_vars, format_func=label_var)
 
     if var in numeric_cols:
-<<<<<<< Updated upstream
         if var == 'age':
             # Original: five tabs for age
             tab1, tab2, tab3, tab4, tab5 = st.tabs(
@@ -532,45 +502,6 @@ def render_explorer(df: pd.DataFrame, numeric_cols: List[str], categorical_cols:
             fig = plot_cramers_heatmap(df, categorical_cols)
             st.pyplot(fig, use_container_width=True)
 
-=======
-        if var == "age":
-            tab1, tab2, tab3, tab4, tab5 = st.tabs(
-                ["Distribution", "Heatmap", "Small multiples", "Scatter with BMI", "Correlation"]
-            )
-            with tab1:
-                kind = st.radio("Spread plot", ["Box plot", "Violin plot"], horizontal=True, key="age_dist_kind")
-                st.pyplot(
-                    plot_numeric_by_level(df, var, kind="violin" if kind == "Violin plot" else "box"),
-                    use_container_width=True
-                )
-            with tab2:
-                st.pyplot(plot_age_heatmap(df), use_container_width=True)
-            with tab3:
-                st.pyplot(plot_age_small_multiples(df), use_container_width=True)
-            with tab4:
-                st.pyplot(plot_scatter_age_bmi(df), use_container_width=True)
-            with tab5:
-                st.pyplot(
-                    plot_numeric_correlation(df, [c for c in numeric_cols if c in df.columns]),
-                    use_container_width=True
-                )
-        else:
-            tab1, tab2, tab3 = st.tabs(["Distribution", "Scatter with BMI", "Correlation"])
-            with tab1:
-                kind = st.radio("Spread plot", ["Box plot", "Violin plot"], horizontal=True, key=f"{var}_dist_kind")
-                st.pyplot(
-                    plot_numeric_by_level(df, var, kind="violin" if kind == "Violin plot" else "box"),
-                    use_container_width=True
-                )
-            with tab2:
-                st.pyplot(plot_scatter_with_bmi(df, var), use_container_width=True)
-            with tab3:
-                st.pyplot(
-                    plot_numeric_correlation(df, [c for c in numeric_cols if c in df.columns]),
-                    use_container_width=True
-                )
-
->>>>>>> Stashed changes
 
 
 # ---------- Main ----------
