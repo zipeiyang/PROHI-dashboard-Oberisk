@@ -189,6 +189,65 @@ def plot_numeric_by_level(df: pd.DataFrame, var: str, kind: str = "box") -> plt.
     fig.tight_layout()
     return fig
 
+def plot_numeric_distribution(df: pd.DataFrame, x_col: str, y_col: str, plot_type: str = 'box') -> plt.Figure:
+    fig = plt.figure(figsize=(8, 6))
+    if plot_type == 'box':
+        sns.boxplot(x=x_col, y=y_col, data=df, order=CATEGORY_ORDER, palette=COLORS)
+    elif plot_type == 'violin':
+        sns.violinplot(x=x_col, y=y_col, data=df, order=CATEGORY_ORDER, palette=COLORS)
+    plt.title(f'{y_col.capitalize()} Distribution by Obesity Level')
+    plt.xlabel('Obesity Level')
+    plt.ylabel(y_col.capitalize())
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+    return fig
+
+def plot_age_analysis(df: pd.DataFrame, plot_type: str = 'heatmap') -> plt.Figure:
+    df_with_age_groups = create_age_groups(df)
+    if plot_type == 'heatmap':
+        fig = plt.figure(figsize=(8, 5))
+        age_bmi_crosstab = pd.crosstab(
+            df_with_age_groups['age_group'], df_with_age_groups["bmi_category"], normalize='index'
+        )
+        sns.heatmap(age_bmi_crosstab, annot=True, fmt='.3f', cmap='YlOrRd',
+                    cbar_kws={'label': 'Proportion', 'shrink': 0.8})
+        plt.title('Obesity Levels Distribution by Age Group')
+        plt.xlabel('Obesity Level')
+        plt.ylabel('Age Group')
+    elif plot_type == 'smallmultiples':
+        fig, axes = plt.subplots(2, 4, figsize=(12, 6))
+        axes = axes.flatten()
+        for i, category in enumerate(CATEGORY_ORDER):
+            age_counts = df_with_age_groups[
+                df_with_age_groups["bmi_category"] == category
+            ]['age_group'].value_counts().sort_index()
+            axes[i].bar(age_counts.index.astype(str), age_counts.values, color=COLORS[i], alpha=0.8)
+            axes[i].set_title(category, fontsize=10)
+            axes[i].tick_params(axis='x', rotation=45)
+            axes[i].set_ylabel('Count')
+        for j in range(len(CATEGORY_ORDER), len(axes)):
+            axes[j].set_visible(False)
+        plt.suptitle('Obesity Levels Distribution by Age Group')
+    plt.tight_layout()
+    return fig
+
+
+def plot_scatter_age_bmi(df: pd.DataFrame) -> plt.Figure:
+    fig = plt.figure(figsize=(10, 8))
+    df_copy = df.copy()
+    df_copy['bmi'] = df_copy['weight'] / (df_copy['height'] ** 2)
+    for i, category in enumerate(CATEGORY_ORDER):
+        subset = df_copy[df_copy["bmi_category"] == category]
+        plt.scatter(subset['age'], subset['bmi'], color=COLORS[i], label=category, alpha=0.7, s=60)
+    for y in [18.5, 25, 30, 35, 40]:
+        plt.axhline(y=y, color='gray', linestyle='--', alpha=0.7)
+    plt.title('Age vs BMI by Obesity Level')
+    plt.xlabel('Age')
+    plt.ylabel('BMI')
+    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+    plt.grid(True, alpha=0.3)
+    plt.tight_layout()
+    return fig
 
 def plot_categorical_stack(df: pd.DataFrame, var: str, as_percent: bool = True, horizontal: bool = False) -> plt.Figure:
     order_display = [label_cat(c) for c in CATEGORY_ORDER]
@@ -226,6 +285,14 @@ def plot_age_heatmap(df: pd.DataFrame) -> plt.Figure:
     fig.tight_layout()
     return fig
 
+def plot_correlation_heatmap(df: pd.DataFrame, numeric_cols: List[str]) -> plt.Figure:
+    fig = plt.figure(figsize=(8, 6))
+    correlation_matrix = df[numeric_cols].corr()
+    sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt='.2f', center=0)
+    plt.title('Correlation Heatmap of Numerical Variables')
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+    return fig
 
 def plot_numeric_correlation(df: pd.DataFrame, numeric_cols: List[str]) -> plt.Figure:
     corr = df[numeric_cols].corr()
@@ -235,6 +302,24 @@ def plot_numeric_correlation(df: pd.DataFrame, numeric_cols: List[str]) -> plt.F
     fig.tight_layout()
     return fig
 
+def plot_categorical_distribution(df: pd.DataFrame, col: str, horizontal: bool = False,
+                                  figsize: Tuple[int, int] = (10, 6)) -> plt.Figure:
+    fig, ax = plt.subplots(figsize=figsize)
+    cross_tab = pd.crosstab(df[col], df["bmi_category"])
+    cross_tab = cross_tab.reindex(columns=CATEGORY_ORDER, fill_value=0)
+    if horizontal:
+        cross_tab.plot(kind='barh', color=COLORS, width=0.8, ax=ax)
+        ax.set_xlabel('Count')
+        ax.set_ylabel(col)
+    else:
+        cross_tab.plot(kind='bar', color=COLORS, width=0.8, ax=ax)
+        ax.set_xlabel(col)
+        ax.set_ylabel('Count')
+        plt.setp(ax.get_xticklabels(), rotation=45, ha='right')
+    ax.legend(title='Obesity Level', bbox_to_anchor=(1.05, 1), loc='upper left')
+    ax.set_title(f'Obesity Levels Distribution by {col}')
+    plt.tight_layout()
+    return fig
 
 def plot_cramers_heatmap(df: pd.DataFrame, cat_cols: List[str]) -> plt.Figure:
     M = pd.DataFrame(index=cat_cols, columns=cat_cols, dtype=float)
@@ -298,29 +383,56 @@ def render_overview(df: pd.DataFrame, numeric_cols: List[str], categorical_cols:
 
 
 def render_explorer(df: pd.DataFrame, numeric_cols: List[str], categorical_cols: List[str]):
-    st.title("🔎 Explore a factor")
+    st.title("🔎 Explore a factors")
     st.caption("Pick one factor to see how it relates to obesity level.")
 
     all_vars = VARIABLE_FEATURES.copy()
     var = st.selectbox("Choose a factor", options=all_vars, format_func=label_var)
 
     if var in numeric_cols:
-        kind = st.radio("How should we show the spread?", ["Box plot", "Violin plot"], horizontal=True)
-        st.pyplot(plot_numeric_by_level(df, var, kind="violin" if kind == "Violin plot" else "box"),
-                  use_container_width=True)
+        if var == 'age':
+            # Original: five tabs for age
+            tab1, tab2, tab3, tab4, tab5 = st.tabs(
+                ["Distribution", "Heatmap", "Small Multiples", "Scatter with BMI", "Correlation"]
+            )
+            with tab1:
+                fig = plot_numeric_distribution(df, "bmi_category", var, plot_type='box')
+                st.pyplot(fig, use_container_width=True)
+            with tab2:
+                fig = plot_age_analysis(df, plot_type='heatmap')
+                st.pyplot(fig, use_container_width=True)
+            with tab3:
+                fig = plot_age_analysis(df, plot_type='smallmultiples')
+                st.pyplot(fig, use_container_width=True)
+            with tab4:
+                fig = plot_scatter_age_bmi(df)
+                st.pyplot(fig, use_container_width=True)
+            with tab5:
+                fig = plot_correlation_heatmap(df, numeric_cols)
+                st.pyplot(fig, use_container_width=True)
 
-        st.markdown("##### Do these numeric factors move together?")
-        st.pyplot(plot_numeric_correlation(df, [c for c in numeric_cols if c in df.columns]),
-                  use_container_width=True)
-    else:
-        st.markdown("##### How is this category split by obesity level?")
-        as_percent = st.toggle("Show as percentages", value=True)
-        horizontal = (var == "transport")
-        st.pyplot(plot_categorical_stack(df, var, as_percent=as_percent, horizontal=horizontal),
-                  use_container_width=True)
+        else:
+            # Original: distribution + correlation
+            tab1, tab2 = st.tabs(["Distribution", "Correlation"])
+            with tab1:
+                plot_type = 'violin' if var in ['veggie_per_meal', 'water_daily'] else 'box'
+                fig = plot_numeric_distribution(df, "bmi_category", var, plot_type=plot_type)
+                st.pyplot(fig, use_container_width=True)
+            with tab2:
+                fig = plot_correlation_heatmap(df, numeric_cols)
+                st.pyplot(fig, use_container_width=True)
 
-        st.markdown("##### How do the categories relate to each other?")
-        st.pyplot(plot_cramers_heatmap(df, categorical_cols), use_container_width=True)
+    elif var in categorical_cols:
+        # Original: distribution + Cramér's V
+        tab1, tab2 = st.tabs(["Distribution", "Cramér's V"])
+        with tab1:
+            horizontal = (var == 'transport')
+            fig = plot_categorical_distribution(df, var, horizontal=horizontal, figsize=(10, 6))
+            st.pyplot(fig, use_container_width=True)
+        with tab2:
+            fig = plot_cramers_heatmap(df, categorical_cols)
+            st.pyplot(fig, use_container_width=True)
+
 
 
 # ---------- Main ----------
