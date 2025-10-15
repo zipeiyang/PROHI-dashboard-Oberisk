@@ -130,7 +130,7 @@ def get_user_input():
         meals_daily = likert_buttons(
             label="Main meals per day",
             options=[1, 2, 3],
-            captions=["1–2 times", "2 times", "More than 3 times"],
+            captions=["1–2 meals", "2 meals", "More than 3 meals"],
             key="meals_daily",
             help_text="How many main meals do you have daily?"
         )
@@ -162,7 +162,7 @@ def get_user_input():
         physical_activity_likert = likert_buttons(
             label="Physical activity (per week)",
             options=[0, 1, 2, 3],
-            captions=["Do not have", "1–2 days", "2–4 days", "More than 5 days"],
+            captions=["None", "1–2 days", "2–4 days", "More than 5 days"],
             key="physical_activity",
             help_text="How often do you have physical activity?"
         )
@@ -222,7 +222,7 @@ def get_user_input():
 
     ud = user_data  # read-only alias for display
     veggie_map = {1:"Never",2:"Sometimes",3:"Always"}
-    meals_map  = {1:"1–2 times",2:"2 times",3:"More than 3 times"}
+    meals_map  = {1:"1–2 meals",2:"2 meals",3:"More than 3 meals"}
     water_map  = {1:"<1 L",2:"1–2 L",3:">2 L"}
     faf_map    = {0:"None",1:"1–2 days",2:"2–4 days",3:">5 days"}
     tue_map    = {0:"1–2 h",1:"3–5 h",2:">5 h"}
@@ -445,7 +445,7 @@ def main():
                 cf_values['meals_daily'] = likert_buttons(
                     label="Main meals per day",
                     options=[1, 2, 3],
-                    captions=["1–2 times", "2 times", "More than 3 times"],
+                    captions=["1–2 meals", "2 meals", "More than 3 meals"],
                     key=f"cf_meals_daily{reset_suffix}",
                     help_text="How many main meals do you have daily?"
                 )
@@ -480,7 +480,7 @@ def main():
                 cf_values['physical_activity'] = likert_buttons(
                     label="Physical activity (per week)",
                     options=[0, 1, 2, 3],
-                    captions=["Do not have", "1–2 days", "2–4 days", "More than 5 days"],
+                    captions=["None", "1–2 days", "2–4 days", "More than 5 days"],
                     key=f"cf_physical_activity{reset_suffix}",
                     help_text="How often do you have physical activity?"
                 )
