@@ -416,6 +416,8 @@ def main():
         .cf-grid-gap { margin-bottom: 10px; }
         </style>
         """, unsafe_allow_html=True)
+    
+        cf_values = st.session_state.counterfactual_values
 
         # Get current counterfactual values from session state
         cf_values = st.session_state.counterfactual_values
@@ -428,6 +430,23 @@ def main():
         # Use reset counter to force widget updates
         reset_suffix = f"_reset_{st.session_state.reset_counter}"
         
+        def ensure(key, val):
+            if key not in st.session_state:
+                st.session_state[key] = val
+
+        # seed all CF widget keys with current values
+        ensure(f"cf_veggie_per_meal{reset_suffix}",     cf_values["veggie_per_meal"])
+        ensure(f"cf_meals_daily{reset_suffix}",         cf_values["meals_daily"])
+        ensure(f"cf_water_daily{reset_suffix}",         cf_values["water_daily"])
+        ensure(f"cf_physical_activity{reset_suffix}",   cf_values["physical_activity"])
+        ensure(f"cf_technological_devices{reset_suffix}", cf_values["technological_devices"])
+        ensure(f"cf_freq_snack{reset_suffix}",          cf_values.get("freq_snack","no"))
+        ensure(f"cf_freq_alcohol{reset_suffix}",        cf_values.get("freq_alcohol","no"))
+        ensure(f"cf_monitor_calorie{reset_suffix}",     cf_values.get("monitor_calorie","no"))
+        ensure(f"cf_often_high_calorie_intake{reset_suffix}", cf_values.get("often_high_calorie_intake","no"))
+        ensure(f"cf_smoking{reset_suffix}",             cf_values.get("smoking","no"))
+        ensure(f"cf_transport{reset_suffix}",           cf_values.get("transport","Public_Transportation"))
+
         col1, col2 = st.columns(2, gap ="medium")
 
         with col1:

@@ -21,7 +21,7 @@ st.markdown(
 
     ## The Project
     Obesity rates are on the rise globally, leading to increased cases of chronic diseases and higher healthcare costs. There is a growing need for early identification and prevention strategies. However, currently personalized tools that uses both anthropometric data (age, sex) and lifestyle factors (e.g., physical activity, diet) to predict an individual's risk of obesity are not widely available. Therefore, the general public requires clear, visualized statistics to understand obesity trends and how their own lifestyle factors contirbute to their obesity risk, which can support and encourage preventive visits to health professionals such as dieticians. 
-    OBERISK is a desktop‑based dashboard that enables individuals to estimate their obesity risk using a machine learning model trained on demographic, family‑history, and lifestyle features. The initial demonstration will run in Streamlit with a potential for future EHR integration and commercialization. This tool was developed in partnership with Stockholm Region and Karolinska Institutet as part of their wellness initiative to help promote healthier lifestyles for Stockholm Lan's population.
+    OBERISK is a desktop‑based dashboard that enables individuals to estimate their obesity risk using a machine learning model trained on demographic, family‑history, and lifestyle features. The initial demonstration will run in Streamlit. This tool was developed in partnership with Stockholm Region and Karolinska Institutet as part of their wellness initiative to help promote healthier lifestyles for Stockholm Lan's population.
 
     What OBERISK offers:
     - Fast risk estimates from the comfort of your own home. No appointment needed! No waiting time!
@@ -95,13 +95,17 @@ st.markdown(
     - Counterfactual analysis for personalized risk modification guidance
 
     ## Team OBERISK
-    *Alex Anna Matija Meilia Zipei*
+    *Alex Anna Matija Meilia Zipei* | info@oberisk.se
 
     ## References
     1.	World Health Organization. (2021, June 9). Obesity and overweight. World Health Organization. https://www.who.int/news-room/fact-sheets/detail/obesity-and-overweight
     2.	Barquera, S., Pedroza-Tobías, A., Medina, C., Hernández-Barrera, L., Bibbins-Domingo, K., Lozano, R., & Moran, A. E. (2020). Global overview of the epidemiology of obesity. Obesity Reviews, 21(S1), e13229. https://doi.org/10.1111/obr.13229
     3.	DeGregory, K. W., Kuiper, P., DeSilvio, T., Pleuss, J. D., Miller, R., Roginski, J. W., Fisher, C. B., Harness, D., Viswanath, S., Heymsfield, S. B., Dungan, I., & Thomas, D. M. (2018). A review of machine learning in obesity. Obesity Reviews, 19(5), 668–685. https://doi.org/10.1111/obr.12667
     4.	Díaz-Rodríguez, S., & Hernández, F. (2019). Estimation of obesity levels based on eating habits and physical condition. UCI Machine Learning Repository. https://archive.ics.uci.edu/dataset/544/estimation+of+obesity+levels+based+on+eating+habits+and+physical+condition
+    5.  Palechor, F.M., & Manotas, A.D. Dataset for estimation of obesity levels based on eating habits and physical condition in individuals from Colombia, Peru and Mexico. Data in Brief. 2019(25). https://doi.org/10.1016/j.dib.2019.104344
+    6.  World Health Organization. Body mass index (BMI) [Internet]. Geneva: World Health Organization. 2025 [cited 2025 Oct 12]. Available from: https://www.who.int/data/gho/data/themes/topics/topic-details/GHO/body-mass-index
+    7.  Rubino, F., Cummings, D. E., Eckel, R. H., Cohen, R. V., Wilding, J. P. H., Brown, W. A., Stanford, F. C., Batterham, R. L., Farooqi, I. S., Farpour-Lambert, N. J., le Roux, C. W., Sattar, N., Baur, L. A., Morrison, K. M., Misra, A., Kadowaki, T., Tham, K. W., Sumithran, P., Garvey, W. T., … Mingrone, G. (2025). Definition and diagnostic criteria of clinical obesity. The Lancet. Diabetes & Endocrinology, 13(3), 221–262. https://doi.org/10.1016/S2213-8587(24)00316-4
+
 
 """
 )
