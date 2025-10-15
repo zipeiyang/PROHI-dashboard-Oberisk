@@ -18,6 +18,37 @@ CATEGORY_ORDER = [
     'Overweight_Level_II', 'Obesity_Type_I', 'Obesity_Type_II', 'Obesity_Type_III'
 ]
 
+#Display labels 
+CATEGORY_LABELS = {
+    "Insufficient_Weight": "Underweight",
+    "Normal_Weight": "Normal weight",
+    "Overweight_Level_I": "Overweight I",
+    "Overweight_Level_II": "Overweight II",
+    "Obesity_Type_I": "Obesity I",
+    "Obesity_Type_II": "Obesity II",
+    "Obesity_Type_III": "Obesity III",
+}
+
+VAR_LABELS = {
+    "age": "Age (years)",
+    "height": "Height (m)",
+    "weight": "Weight (kg)",
+    "veggie_per_meal": "Vegetables per meal",
+    "meals_daily": "Meals per day",
+    "water_daily": "Water per day (L)",
+    "physical_activity": "Physical activity (days/week)",
+    "technological_devices": "Technology use (hours/day)",
+    "sex": "Sex",
+    "family_history": "Family history of overweight",
+    "often_high_calorie_intake": "Often high-calorie intake",
+    "freq_snack": "Snack frequency",
+    "smoking": "Smoking",
+    "monitor_calorie": "Monitor calorie intake",
+    "freq_alcohol": "Alcohol frequency",
+    "transport": "Usual transport mode",
+    "bmi_category": "Obesity level"
+}
+
 COLORS = ['#F7F0D4', '#A5C2A7', '#C3D2E0', '#A5B8D6', '#E8C4B8', '#D49A89', '#B36A5E']
 
 VARIABLE_FEATURES = [
@@ -27,15 +58,21 @@ VARIABLE_FEATURES = [
     'smoking', 'monitor_calorie', 'freq_alcohol', 'transport'
 ]
 
+def label_cat(name: str) -> str:
+    return CATEGORY_LABELS.get(name, name.replace("_", " "))
+
+def label_var(name: str) -> str:
+    return VAR_LABELS.get(name, name.replace("_", " "))
+
 # Set matplotlib default parameters
 plt.rcParams.update({
-    'font.size': 10,
-    'axes.titlesize': 12,
-    'axes.labelsize': 10,
-    'xtick.labelsize': 9,
-    'ytick.labelsize': 9,
-    'legend.fontsize': 9,
-    'figure.dpi': 100
+    'font.size': 12,
+    'axes.titlesize': 16,
+    'axes.labelsize': 11,
+    'xtick.labelsize': 11,
+    'ytick.labelsize': 11,
+    'legend.fontsize': 11,
+    'figure.dpi': 110
 })
 
 # Load data
@@ -66,14 +103,14 @@ def load_data(path: str = DEFAULT_CSV_PATH) -> pd.DataFrame:
         })
         
         # Ensure correct data types
-        numeric_cols = ['age', 'height', 'weight', 'veggie_per_meal', 'meals_daily', 
-                       'water_daily', 'physical_activity', 'technological_devices']
+        for col in ['age','height','weight','veggie_per_meal','meals_daily','water_daily',
+                'physical_activity','technological_devices']:
+            df[col] = pd.to_numeric(df[col], errors='coerce')
         
-        for col in numeric_cols:
-            if col in df.columns:
-                df[col] = pd.to_numeric(df[col], errors='coerce')
-        
+        # Pretty category labels for display (keep raw in a parallel column if needed)
+        df['bmi_category_display'] = df['bmi_category'].map(label_cat)
         return df
+    
     except Exception as e:
         st.error(f"Failed to load dataset from '{path}'. Error: {e}")
         st.stop()
@@ -110,326 +147,218 @@ def create_age_groups(df: pd.DataFrame) -> pd.DataFrame:
     return df_copy
 
 # Plotting functions
-def create_figure(size: Tuple[int, int] = (8, 6)) -> plt.Figure:
-    """Create standardized matplotlib figure"""
-    return plt.figure(figsize=size)
+def plot_obesity_distribution(df: pd.DataFrame, show_percent: bool = True, pie: bool = True) -> plt.Figure:
+    order_display = [label_cat(c) for c in CATEGORY_ORDER]
+    counts = df["bmi_category_display"].value_counts().reindex(order_display, fill_value=0)
 
-def plot_pie_distribution(df: pd.DataFrame) -> plt.Figure:
-    """Plot pie chart of target variable distribution"""
-    fig = create_figure((6, 6))
-    counts = df["bmi_category"].value_counts().reindex(CATEGORY_ORDER)
-    explode = (0.05, 0.1, 0, 0, 0, 0, 0)
-    plt.pie(counts.values, labels=counts.index, autopct='%1.1f%%',
-           startangle=90, explode=explode, colors=COLORS, shadow=True)
-    plt.title('Distribution of Obesity Levels', pad=20)
-    return fig
-
-def plot_categorical_distribution(df: pd.DataFrame, col: str, horizontal: bool = False, 
-                                 figsize: Tuple[int, int] = (10, 6)) -> plt.Figure:
-    """Plot distribution of categorical variable vs target variable"""
-    fig, ax = plt.subplots(figsize=figsize)
-    cross_tab = pd.crosstab(df[col], df["bmi_category"])
-    cross_tab = cross_tab.reindex(columns=CATEGORY_ORDER, fill_value=0)
-    
-    if horizontal:
-        cross_tab.plot(kind='barh', color=COLORS, width=0.8, ax=ax)
-        ax.set_xlabel('Count')
-        ax.set_ylabel(col)
+    fig, ax = plt.subplots(figsize=(7, 5 if not pie else 6))
+    if pie:
+        explode = [0.08 if i < 2 else 0 for i in range(len(order_display))]
+        ax.pie(counts.values, labels=order_display, autopct="%1.1f%%", startangle=90,
+               explode=explode, colors=COLORS, shadow=True)
+        ax.set_title("Distribution of Obesity Levels")
     else:
-        cross_tab.plot(kind='bar', color=COLORS, width=0.8, ax=ax)
-        ax.set_xlabel(col)
-        ax.set_ylabel('Count')        
-        plt.setp(ax.get_xticklabels(), rotation=45, ha='right')
-    
-    ax.legend(title='Obesity Level', bbox_to_anchor=(1.05, 1), loc='upper left')
-    ax.set_title(f'Obesity Levels Distribution by {col}')
-    plt.tight_layout()
+        vals = counts.values
+        if show_percent:
+            vals = vals / vals.sum() * 100
+            ax.bar(order_display, vals, color=COLORS)
+            ax.set_ylabel("Percent of people (%)")
+        else:
+            ax.bar(order_display, vals, color=COLORS)
+            ax.set_ylabel("Number of people")
+        ax.set_title("Obesity Levels (counts or %)")
+        ax.set_xticklabels(order_display, rotation=30, ha="right")
+    fig.tight_layout()
     return fig
 
-def plot_numeric_distribution(df: pd.DataFrame, x_col: str, y_col: str, plot_type: str = 'box') -> plt.Figure:
-    """Plot distribution of numeric variables"""
-    fig = create_figure((8, 6))
-    
-    if plot_type == 'box':
-        sns.boxplot(x=x_col, y=y_col, data=df, order=CATEGORY_ORDER, palette=COLORS)
-    elif plot_type == 'violin':
-        sns.violinplot(x=x_col, y=y_col, data=df, order=CATEGORY_ORDER, palette=COLORS)
-    
-    plt.title(f'{y_col.capitalize()} Distribution by Obesity Level')
-    plt.xlabel('Obesity Level')
-    plt.ylabel(y_col.capitalize())
-    plt.xticks(rotation=45)
-    plt.tight_layout()
+
+def plot_numeric_by_level(df: pd.DataFrame, var: str, kind: str = "box") -> plt.Figure:
+    fig, ax = plt.subplots(figsize=(8, 5))
+    x = "bmi_category_display"
+    order_display = [label_cat(c) for c in CATEGORY_ORDER]
+
+    if kind == "violin":
+        sns.violinplot(x=x, y=var, data=df, order=order_display, palette=COLORS, ax=ax, cut=0)
+    else:
+        sns.boxplot(x=x, y=var, data=df, order=order_display, palette=COLORS, ax=ax)
+
+    ax.set_title(f"{label_var(var)} across obesity levels")
+    ax.set_xlabel(label_var("bmi_category"))
+    ax.set_ylabel(label_var(var))
+    ax.tick_params(axis="x", rotation=30)
+    fig.tight_layout()
     return fig
 
-def plot_age_analysis(df: pd.DataFrame, plot_type: str = 'heatmap') -> plt.Figure:
-    """Plot age-related analysis"""
-    df_with_age_groups = create_age_groups(df)
-    
-    if plot_type == 'heatmap':
-        fig = create_figure((8, 5))
-        age_bmi_crosstab = pd.crosstab(df_with_age_groups['age_group'], df_with_age_groups["bmi_category"], normalize='index')
-        sns.heatmap(age_bmi_crosstab, annot=True, fmt='.3f', cmap='YlOrRd', 
-                   cbar_kws={'label': 'Proportion', 'shrink': 0.8})
-        plt.title('Obesity Levels Distribution by Age Group')
-        plt.xlabel('Obesity Level')
-        plt.ylabel('Age Group')
-    elif plot_type == 'smallmultiples':
-        fig, axes = plt.subplots(2, 4, figsize=(12, 6))
-        axes = axes.flatten()
-        for i, category in enumerate(CATEGORY_ORDER):
-            age_counts = df_with_age_groups[df_with_age_groups["bmi_category"] == category]['age_group'].value_counts().sort_index()
-            axes[i].bar(age_counts.index.astype(str), age_counts.values, color=COLORS[i], alpha=0.8)
-            axes[i].set_title(category, fontsize=10)
-            axes[i].tick_params(axis='x', rotation=45)
-            axes[i].set_ylabel('Count')
-        for j in range(len(CATEGORY_ORDER), len(axes)):
-            axes[j].set_visible(False)
-        plt.suptitle('Obesity Levels Distribution by Age Group')
-    
-    plt.tight_layout()
+
+def plot_categorical_stack(df: pd.DataFrame, var: str, as_percent: bool = True, horizontal: bool = False) -> plt.Figure:
+    order_display = [label_cat(c) for c in CATEGORY_ORDER]
+    ct = pd.crosstab(df[var], df["bmi_category_display"]).reindex(columns=order_display, fill_value=0)
+    if as_percent:
+        ct = (ct.T / ct.T.sum()).T * 100
+
+    fig, ax = plt.subplots(figsize=(10, 5))
+    if horizontal:
+        ct.plot(kind="barh", stacked=True, color=COLORS, ax=ax)
+        ax.set_xlabel("Percent of people (%)" if as_percent else "Count")
+        ax.set_ylabel(label_var(var))
+    else:
+        ct.plot(kind="bar", stacked=True, color=COLORS, ax=ax)
+        ax.set_ylabel("Percent of people (%)" if as_percent else "Count")
+        ax.set_xlabel(label_var(var))
+        ax.tick_params(axis="x", rotation=0 if var == "transport" else 30)
+
+    ax.legend(title="Obesity level", bbox_to_anchor=(1.02, 1), loc="upper left")
+    ax.set_title(f"{label_var(var)} vs obesity level")
+    fig.tight_layout()
     return fig
 
-def plot_scatter_age_bmi(df: pd.DataFrame) -> plt.Figure:
-    """Plot scatter plot of age vs BMI"""
-    fig = create_figure((10, 8))
-    df_copy = df.copy()
-    df_copy['bmi'] = df_copy['weight'] / (df_copy['height'] ** 2)
-    
-    for i, category in enumerate(CATEGORY_ORDER):
-        subset = df_copy[df_copy["bmi_category"] == category]
-        plt.scatter(subset['age'], subset['bmi'], color=COLORS[i], label=category, alpha=0.7, s=60)
-    
-    for y in [18.5, 25, 30, 35, 40]:
-        plt.axhline(y=y, color='gray', linestyle='--', alpha=0.7)
-    
-    plt.title('Age vs BMI by Obesity Level')
-    plt.xlabel('Age')
-    plt.ylabel('BMI')
-    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
-    plt.grid(True, alpha=0.3)
-    plt.tight_layout()
+
+def plot_age_heatmap(df: pd.DataFrame) -> plt.Figure:
+    g = create_age_groups(df)
+    tab = pd.crosstab(g["age_group"], g["bmi_category_display"], normalize="index") * 100
+    fig, ax = plt.subplots(figsize=(8, 5))
+    sns.heatmap(tab, annot=True, fmt=".1f", cmap="YlOrRd",
+                cbar_kws={"label": "Percent (%)"}, annot_kws={"size": 8}, ax=ax)
+    ax.set_title("Age groups vs obesity level", fontsize=11)
+    ax.set_xlabel("Obesity level", fontsize=10)
+    ax.set_ylabel("Age group", fontsize=10)
+    ax.tick_params(labelsize=9)
+    fig.tight_layout()
     return fig
 
-def plot_correlation_heatmap(df: pd.DataFrame, numeric_cols: List[str]) -> plt.Figure:
-    """Plot correlation heatmap for numeric variables"""
-    fig = create_figure((8, 6))
-    correlation_matrix = df[numeric_cols].corr()
-    sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt='.2f', center=0)
-    plt.title('Correlation Heatmap of Numerical Variables')
-    plt.xticks(rotation=45)
-    plt.tight_layout()
+
+def plot_numeric_correlation(df: pd.DataFrame, numeric_cols: List[str]) -> plt.Figure:
+    corr = df[numeric_cols].corr()
+    fig, ax = plt.subplots(figsize=(8, 6))
+    sns.heatmap(corr, annot=True, fmt=".2f", cmap="coolwarm", center=0, ax=ax)
+    ax.set_title("How numeric factors move together")
+    fig.tight_layout()
     return fig
 
-def plot_cramers_heatmap(df: pd.DataFrame, categorical_cols: List[str]) -> plt.Figure:
-    """Plot Cramér's V association heatmap for categorical variables"""
-    cramer_matrix = pd.DataFrame(index=categorical_cols, columns=categorical_cols, dtype=float)
-    
-    for i in categorical_cols:
-        for j in categorical_cols:
-            try:
-                cramer_matrix.loc[i, j] = calculate_cramers_v(df[i], df[j])
-            except Exception:
-                cramer_matrix.loc[i, j] = 0.0
-    
-    fig = create_figure((10, 7))
-    sns.heatmap(cramer_matrix.astype(float), annot=True, cmap='Blues', fmt='.2f', 
-               square=True, cbar_kws={'shrink': .8})
-    plt.title("Association Heatmap of Categorical Variables (Cramer's V)")
-    plt.xticks(rotation=45)
-    plt.tight_layout()
+
+def plot_cramers_heatmap(df: pd.DataFrame, cat_cols: List[str]) -> plt.Figure:
+    M = pd.DataFrame(index=cat_cols, columns=cat_cols, dtype=float)
+    for i in cat_cols:
+        for j in cat_cols:
+            M.loc[i, j] = calculate_cramers_v(df[i], df[j])
+
+    fig, ax = plt.subplots(figsize=(10, 7))
+    sns.heatmap(M.astype(float), annot=True, cmap="Blues", fmt=".2f",
+                square=True, cbar_kws={"shrink": .8}, ax=ax)
+    ax.set_title("Strength of association (Cramér’s V) between categories")
+    ax.set_xticklabels([label_var(c) for c in cat_cols], rotation=30, ha="right")
+    ax.set_yticklabels([label_var(c) for c in cat_cols], rotation=0)
+    fig.tight_layout()
     return fig
 
-# Page rendering functions
-def render_summary_page(df: pd.DataFrame, numeric_cols: List[str], categorical_cols: List[str]):
-    """Render summary page"""
-    st.header("Introduction")
+
+# ---------- Pages ----------
+def render_overview(df: pd.DataFrame, numeric_cols: List[str], categorical_cols: List[str]):
+    st.title("📊 Overview")
+    st.caption("Simple charts with plain labels. Hover for details.")
+
     n_rows, n_cols = df.shape
-    st.write(
-        f"Our dataset includes **{n_rows} data points** and **{n_cols} features** "
-        "for the estimation of obesity levels in individuals from the countries of "
-        "Mexico, Peru and Colombia, based on their eating habits and physical condition."
-    )
-    
-    # Obesity level distribution
-    st.header("Obesity Level Distribution")
-    col1, col2 = st.columns([1, 2])
-    
-    with col1:
-        selected_level = st.radio(
-            "Please select an Obesity Level",
-            CATEGORY_ORDER,
-            key="obesity_level_selector"
-        )
-    
-    counts = df["bmi_category"].value_counts()
-    explode = [0.1 if lvl == selected_level else 0 for lvl in CATEGORY_ORDER]
-    
-    with col2:
-        fig = create_figure((6, 6))
-        plt.pie(
-            counts[CATEGORY_ORDER],
-            labels=CATEGORY_ORDER,
-            autopct="%1.1f%%",
-            explode=explode,
-            shadow=True,
-            startangle=90,
-            colors=COLORS
-        )
-        plt.title("Obesity Level Distribution")
-        st.metric(label=f"Count of {selected_level}", value=int(counts[selected_level]))
-        st.pyplot(fig)
-    
-    # Numeric variable statistics
-    st.header("Numerical Variables")
-    stats_df = df[numeric_cols].describe().T
-    st.dataframe(stats_df, use_container_width=True)
-    
-    # Categorical variable distribution
-    st.header("Categorical Variables")
-    col1, col2 = st.columns([1, 2])
-    
-    with col1:
-        selected_cat = st.selectbox(
-            "Please choose a categorical variable",
-            categorical_cols,
-            key="cat_var_selector"
-        )
-        
-        freq_table = pd.DataFrame()
-        
-        if st.checkbox("Show frequency table", key="freq_table_checkbox"):
-            freq_table = df[selected_cat].value_counts(normalize=True).reset_index()
-            freq_table.columns = [selected_cat, "Proportion"]
-            st.dataframe(freq_table)
-    
-    with col2:
-        fig = create_figure((6, 4))
-        sns.countplot(data=df, x=selected_cat, order=df[selected_cat].value_counts().index, palette="pastel")
-        plt.title(f"Distribution of {selected_cat}")
-        plt.xticks(rotation=45)
-        st.pyplot(fig)
+    c1, c2, c3 = st.columns(3)
+    c1.metric("People in dataset", f"{n_rows:,}")
+    c2.metric("Features", f"{17}")
 
-def render_single_features_page(df: pd.DataFrame, numeric_cols: List[str], categorical_cols: List[str]):
-    """Render single feature analysis page"""
-    st.header("Drill-Down: Variable Explorer")
-    st.markdown("""
-    **Understand how each factor correlates with obesity levels.**  
-    This view allows you to focus on one variable at a time, examining the specific relationship between individual lifestyle or physical factors 
-    and obesity classification through tailored visualizations. Select any variable below to begin your analysis.
-    """)
-    
-    left_col, right_col = st.columns([1, 3])
-    
-    with left_col:
-        var = st.radio("Please select a feature", options=VARIABLE_FEATURES, index=0, key="feature_selector")
-        st.markdown("---")
-        st.markdown("Legend:")
-        st.write(", ".join(CATEGORY_ORDER))
-        st.markdown("---")
-    
-    with right_col:
-        st.markdown(f"#### Plots for **{var}**")
-        
-        # Select appropriate charts based on variable type
-        if var in numeric_cols:
-            if var == 'age':
-                tab1, tab2, tab3, tab4, tab5 = st.tabs(["Distribution", "Heatmap", "Small Multiples", "Scatter with BMI", "Correlation"])
-                with tab1:
-                    fig = plot_numeric_distribution(df, "bmi_category", var, 'box')
-                    st.pyplot(fig)
-                with tab2:
-                    fig = plot_age_analysis(df, 'heatmap')
-                    st.pyplot(fig)
-                with tab3:
-                    fig = plot_age_analysis(df, 'smallmultiples')
-                    st.pyplot(fig)
-                with tab4:
-                    fig = plot_scatter_age_bmi(df)
-                    st.pyplot(fig)
-                with tab5:
-                    fig = plot_correlation_heatmap(df, numeric_cols)
-                    st.pyplot(fig)
-            else:
-                tab1, tab2 = st.tabs(["Distribution", "Correlation"])
-                with tab1:
-                    plot_type = 'violin' if var in ['veggie_per_meal', 'water_daily'] else 'box'
-                    fig = plot_numeric_distribution(df, "bmi_category", var, plot_type)
-                    st.pyplot(fig)
-                with tab2:
-                    fig = plot_correlation_heatmap(df, numeric_cols)
-                    st.pyplot(fig)
-        
-        elif var in categorical_cols:
-            # Create two tabs: one for distribution plot, one for Cramer's V heatmap
-            tab1, tab2 = st.tabs(["Distribution", "Cramer's V"])
-            
-            with tab1:
-                horizontal = (var == 'transport')
-                cross_tab = pd.crosstab(df[var], df["bmi_category"])
-                cross_tab = cross_tab.reindex(columns=CATEGORY_ORDER, fill_value=0)
-                try:
-                    fig = plot_categorical_distribution(df, var, horizontal)
-                    st.pyplot(fig)
-                except Exception as e:
-                    st.error(f"Error plotting: {e}")
-            
-            with tab2:
-                with st.spinner("Calculating Cramer's V..."):
-                    fig = plot_cramers_heatmap(df, categorical_cols)
-                    st.pyplot(fig)
+    with st.expander("What am I looking at?"):
+        st.markdown(
+            "- **Obesity level** is based on BMI from self-reported height & weight.\n"
+            "- These are **screening categories**, not a clinical diagnosis.\n"
+            "- Switch between **counts** and **percentages**."
+        )
 
-# Main application
+    st.subheader("Obesity levels in the dataset")
+    st.caption("See how many people fall into each BMI-based group. Switch between pie or bar, and counts or percentages to compare sizes easily.")
+    left, right = st.columns([1.1, 1.9])
+    with left:
+        chart_type = st.radio("Chart type", ["Pie", "Bar"], horizontal=True)
+        show_percent = st.toggle("Show percentages", value=True)
+    with right:
+        fig = plot_obesity_distribution(df, show_percent=show_percent, pie=(chart_type == "Pie"))
+        st.pyplot(fig, use_container_width=True)
+    st.caption("Tip: Percent is easier to compare across groups; counts show the exact number of people.")
+
+
+    st.divider()
+    st.subheader("Numbers at a glance (numeric factors)")
+    stats = df[[c for c in numeric_cols if c in df.columns]].describe().T
+    stats = stats.rename(index=lambda x: label_var(x)).rename(columns={
+        "mean": "Mean", "std": "SD", "min": "Min", "25%": "P25",
+        "50%": "Median", "75%": "P75", "max": "Max"
+    })
+    st.dataframe(stats, use_container_width=True)
+
+    st.divider()
+    st.subheader("Age groups vs obesity level")
+    st.caption("Each row adds to 100%.")
+    
+    st.pyplot(plot_age_heatmap(df), use_container_width=True)
+
+
+def render_explorer(df: pd.DataFrame, numeric_cols: List[str], categorical_cols: List[str]):
+    st.title("🔎 Explore a factor")
+    st.caption("Pick one factor to see how it relates to obesity level.")
+
+    all_vars = VARIABLE_FEATURES.copy()
+    var = st.selectbox("Choose a factor", options=all_vars, format_func=label_var)
+
+    if var in numeric_cols:
+        kind = st.radio("How should we show the spread?", ["Box plot", "Violin plot"], horizontal=True)
+        st.pyplot(plot_numeric_by_level(df, var, kind="violin" if kind == "Violin plot" else "box"),
+                  use_container_width=True)
+
+        st.markdown("##### Do these numeric factors move together?")
+        st.pyplot(plot_numeric_correlation(df, [c for c in numeric_cols if c in df.columns]),
+                  use_container_width=True)
+    else:
+        st.markdown("##### How is this category split by obesity level?")
+        as_percent = st.toggle("Show as percentages", value=True)
+        horizontal = (var == "transport")
+        st.pyplot(plot_categorical_stack(df, var, as_percent=as_percent, horizontal=horizontal),
+                  use_container_width=True)
+
+        st.markdown("##### How do the categories relate to each other?")
+        st.pyplot(plot_cramers_heatmap(df, categorical_cols), use_container_width=True)
+
+
+# ---------- Main ----------
 def main():
-    # Load data
-    try:
-        df = load_data()
-    except Exception as e:
-        st.error(f"Failed to load dataset. Make sure '{DEFAULT_CSV_PATH}' exists. Error: {e}")
-        return
-    
+    df = load_data()
     target = "bmi_category"
-    
-    # Identify numeric and categorical variables
+
     numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()
-    categorical_cols = df.select_dtypes(include=["object"]).columns.drop(target).tolist()
-    
-    # Ensure all variables are in the correct lists
-    for col in VARIABLE_FEATURES:
-        if col not in numeric_cols and col not in categorical_cols:
-            st.warning(f"Column '{col}' not found in numeric or categorical columns. It might have an unexpected data type.")
-    
-    # Sidebar navigation
-    if 'current_page' not in st.session_state:
-        st.session_state.current_page = "Data Overview"
+    categorical_cols = (
+        df.select_dtypes(include=["object"])
+          .columns.drop([target, "bmi_category_display"])
+          .tolist()
+    )
+
+    # Sidebar nav
+    if "page" not in st.session_state:
+        st.session_state.page = "Overview"
 
     st.sidebar.markdown("#### Navigation")
-    col1, col2 = st.sidebar.columns(2)
+    b1, b2 = st.sidebar.columns(2)
+    if b1.button("Overview",
+                 type="primary" if st.session_state.page == "Overview" else "secondary",
+                 use_container_width=True):
+        st.session_state.page = "Overview"
+    if b2.button("Explore factor",
+                 type="primary" if st.session_state.page == "Explorer" else "secondary",
+                 use_container_width=True):
+        st.session_state.page = "Explorer"
 
-    with col1:
-        if st.button("Data Overview", use_container_width=True, 
-                     type="primary" if st.session_state.current_page == "Data Overview" else "secondary"):
-            st.session_state.current_page = "Data Overview"
-            st.rerun()
+    st.sidebar.markdown("---")
+    st.sidebar.markdown("**Legend**")
+    st.sidebar.write(", ".join([label_cat(c) for c in CATEGORY_ORDER]))
 
-    with col2:
-        if st.button("Variable Explorer", use_container_width=True,
-                     type="primary" if st.session_state.current_page == "Variable Explorer" else "secondary"):
-            st.session_state.current_page = "Variable Explorer"
-            st.rerun()
+    if st.session_state.page == "Overview":
+        render_overview(df, numeric_cols, categorical_cols)
+    else:
+        render_explorer(df, numeric_cols, categorical_cols)
 
-    subpage = st.session_state.current_page
-    
-    # Main content area
-    st.markdown('<div class="main-content">', unsafe_allow_html=True)
-    
-    if subpage == "Data Overview":
-        render_summary_page(df, numeric_cols, categorical_cols)
-    elif subpage == "Variable Explorer":
-        render_single_features_page(df, numeric_cols, categorical_cols)
-    
-    st.markdown('</div>', unsafe_allow_html=True)
-    st.markdown('<div style="height:60px"></div>', unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
