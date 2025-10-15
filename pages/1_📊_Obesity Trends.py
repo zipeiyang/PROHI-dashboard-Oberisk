@@ -49,7 +49,15 @@ VAR_LABELS = {
     "bmi_category": "Obesity level"
 }
 
-COLORS = ['#F7F0D4', '#A5C2A7', '#C3D2E0', '#A5B8D6', '#E8C4B8', '#D49A89', '#B36A5E']
+COLORS = [
+    "#E05E00",
+    "#FFB26F",
+    "#FFD0AA",
+    "#9BC1FF",
+    "#4284FF",
+    "#3276C4",
+    "#1F9CA3",
+]
 
 VARIABLE_FEATURES = [
     'age', 'height', 'weight', 'veggie_per_meal', 'meals_daily', 'water_daily',
@@ -189,6 +197,7 @@ def plot_numeric_by_level(df: pd.DataFrame, var: str, kind: str = "box") -> plt.
     fig.tight_layout()
     return fig
 
+<<<<<<< Updated upstream
 def plot_numeric_distribution(df: pd.DataFrame, x_col: str, y_col: str, plot_type: str = 'box') -> plt.Figure:
     fig = plt.figure(figsize=(8, 6))
     if plot_type == 'box':
@@ -246,6 +255,22 @@ def plot_scatter_age_bmi(df: pd.DataFrame) -> plt.Figure:
     plt.ylabel('BMI')
     plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
     plt.grid(True, alpha=0.3)
+=======
+def plot_age_small_multiples(df: pd.DataFrame) -> plt.Figure:
+    g = create_age_groups(df)
+    fig, axes = plt.subplots(2, 4, figsize=(12, 6))
+    axes = axes.flatten()
+    order_display = [label_cat(c) for c in CATEGORY_ORDER]
+    for i, cat in enumerate(order_display):
+        age_counts = g[g["bmi_category_display"] == cat]['age_group'].value_counts().sort_index()
+        axes[i].bar(age_counts.index.astype(str), age_counts.values, color=COLORS[i], alpha=0.85)
+        axes[i].set_title(cat, fontsize=10)
+        axes[i].tick_params(axis='x', rotation=45)
+        axes[i].set_ylabel('Count')
+    for j in range(len(order_display), len(axes)):
+        axes[j].set_visible(False)
+    plt.suptitle('Age groups distribution within each obesity level')
+>>>>>>> Stashed changes
     plt.tight_layout()
     return fig
 
@@ -297,7 +322,7 @@ def plot_correlation_heatmap(df: pd.DataFrame, numeric_cols: List[str]) -> plt.F
 def plot_numeric_correlation(df: pd.DataFrame, numeric_cols: List[str]) -> plt.Figure:
     corr = df[numeric_cols].corr()
     fig, ax = plt.subplots(figsize=(8, 6))
-    sns.heatmap(corr, annot=True, fmt=".2f", cmap="coolwarm", center=0, ax=ax)
+    sns.heatmap(corr, annot=True, fmt=".2f", cmap="YlOrRd", center=0, ax=ax)
     ax.set_title("How numeric factors move together")
     fig.tight_layout()
     return fig
@@ -328,11 +353,47 @@ def plot_cramers_heatmap(df: pd.DataFrame, cat_cols: List[str]) -> plt.Figure:
             M.loc[i, j] = calculate_cramers_v(df[i], df[j])
 
     fig, ax = plt.subplots(figsize=(10, 7))
-    sns.heatmap(M.astype(float), annot=True, cmap="Blues", fmt=".2f",
+    sns.heatmap(M.astype(float), annot=True, cmap="YlOrRd", fmt=".2f",
                 square=True, cbar_kws={"shrink": .8}, ax=ax)
     ax.set_title("Strength of association (Cramér’s V) between categories")
     ax.set_xticklabels([label_var(c) for c in cat_cols], rotation=30, ha="right")
     ax.set_yticklabels([label_var(c) for c in cat_cols], rotation=0)
+    fig.tight_layout()
+    return fig
+
+# NEW: scatter Age vs BMI (colored by obesity level)
+def plot_scatter_age_bmi(df: pd.DataFrame) -> plt.Figure:
+    fig, ax = plt.subplots(figsize=(10, 7))
+    dfc = df.copy()
+    dfc['bmi'] = dfc['weight'] / (dfc['height'] ** 2)
+    order_display = [label_cat(c) for c in CATEGORY_ORDER]
+    for i, cat in enumerate(order_display):
+        subset = dfc[dfc["bmi_category_display"] == cat]
+        ax.scatter(subset['age'], subset['bmi'], label=cat, alpha=0.7, s=50, color=COLORS[i])
+    for y in [18.5, 25, 30, 35, 40]:
+        ax.axhline(y=y, color='gray', linestyle='--', alpha=0.6)
+    ax.set_title('Age vs BMI by obesity level')
+    ax.set_xlabel(label_var("age"))
+    ax.set_ylabel("BMI")
+    ax.legend(bbox_to_anchor=(1.02, 1), loc="upper left")
+    ax.grid(True, alpha=0.3)
+    fig.tight_layout()
+    return fig
+
+# NEW: generic scatter (feature vs BMI) colored by level
+def plot_scatter_with_bmi(df: pd.DataFrame, var: str) -> plt.Figure:
+    fig, ax = plt.subplots(figsize=(9, 6))
+    dfc = df.copy()
+    dfc['bmi'] = dfc['weight'] / (dfc['height'] ** 2)
+    order_display = [label_cat(c) for c in CATEGORY_ORDER]
+    for i, cat in enumerate(order_display):
+        s = dfc[dfc["bmi_category_display"] == cat]
+        ax.scatter(s[var], s['bmi'], label=cat, alpha=0.7, s=40, color=COLORS[i])
+    ax.set_title(f"{label_var(var)} vs BMI by obesity level")
+    ax.set_xlabel(label_var(var))
+    ax.set_ylabel("BMI")
+    ax.legend(bbox_to_anchor=(1.02, 1), loc="upper left")
+    ax.grid(True, alpha=0.3)
     fig.tight_layout()
     return fig
 
@@ -381,6 +442,31 @@ def render_overview(df: pd.DataFrame, numeric_cols: List[str], categorical_cols:
     
     st.pyplot(plot_age_heatmap(df), use_container_width=True)
 
+    #Categorical variables
+    st.divider()
+    st.subheader("Categorical variables")
+    st.caption("Compare how each category splits across obesity levels. You can switch to counts or percentages.")
+
+    left, right = st.columns([1, 2])
+    with left:
+        cat_cols_for_picker = [
+            c for c in df.select_dtypes(include=["object"]).columns
+            if c not in ["bmi_category", "bmi_category_display"]
+        ]
+        chosen_cat = st.selectbox("Pick a categorical variable", cat_cols_for_picker, format_func=label_var)
+        as_percent = st.toggle("Show as percentages", value=True)
+        horizontal = (chosen_cat == "transport")
+
+    with right:
+        st.pyplot(
+            plot_categorical_stack(df, chosen_cat, as_percent=as_percent, horizontal=horizontal),
+            use_container_width=True
+        )
+
+    with st.expander("Association between categories (Cramér’s V)"):
+        st.pyplot(plot_cramers_heatmap(df, cat_cols_for_picker), use_container_width=False)
+
+
 
 def render_explorer(df: pd.DataFrame, numeric_cols: List[str], categorical_cols: List[str]):
     st.title("🔎 Explore a factors")
@@ -390,6 +476,7 @@ def render_explorer(df: pd.DataFrame, numeric_cols: List[str], categorical_cols:
     var = st.selectbox("Choose a factor", options=all_vars, format_func=label_var)
 
     if var in numeric_cols:
+<<<<<<< Updated upstream
         if var == 'age':
             # Original: five tabs for age
             tab1, tab2, tab3, tab4, tab5 = st.tabs(
@@ -433,6 +520,45 @@ def render_explorer(df: pd.DataFrame, numeric_cols: List[str], categorical_cols:
             fig = plot_cramers_heatmap(df, categorical_cols)
             st.pyplot(fig, use_container_width=True)
 
+=======
+        if var == "age":
+            tab1, tab2, tab3, tab4, tab5 = st.tabs(
+                ["Distribution", "Heatmap", "Small multiples", "Scatter with BMI", "Correlation"]
+            )
+            with tab1:
+                kind = st.radio("Spread plot", ["Box plot", "Violin plot"], horizontal=True, key="age_dist_kind")
+                st.pyplot(
+                    plot_numeric_by_level(df, var, kind="violin" if kind == "Violin plot" else "box"),
+                    use_container_width=True
+                )
+            with tab2:
+                st.pyplot(plot_age_heatmap(df), use_container_width=True)
+            with tab3:
+                st.pyplot(plot_age_small_multiples(df), use_container_width=True)
+            with tab4:
+                st.pyplot(plot_scatter_age_bmi(df), use_container_width=True)
+            with tab5:
+                st.pyplot(
+                    plot_numeric_correlation(df, [c for c in numeric_cols if c in df.columns]),
+                    use_container_width=True
+                )
+        else:
+            tab1, tab2, tab3 = st.tabs(["Distribution", "Scatter with BMI", "Correlation"])
+            with tab1:
+                kind = st.radio("Spread plot", ["Box plot", "Violin plot"], horizontal=True, key=f"{var}_dist_kind")
+                st.pyplot(
+                    plot_numeric_by_level(df, var, kind="violin" if kind == "Violin plot" else "box"),
+                    use_container_width=True
+                )
+            with tab2:
+                st.pyplot(plot_scatter_with_bmi(df, var), use_container_width=True)
+            with tab3:
+                st.pyplot(
+                    plot_numeric_correlation(df, [c for c in numeric_cols if c in df.columns]),
+                    use_container_width=True
+                )
+
+>>>>>>> Stashed changes
 
 
 # ---------- Main ----------
