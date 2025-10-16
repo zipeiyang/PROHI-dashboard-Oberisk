@@ -72,6 +72,14 @@ def label_cat(name: str) -> str:
 def label_var(name: str) -> str:
     return VAR_LABELS.get(name, name.replace("_", " "))
 
+def show_centered(fig, middle_ratio=5):
+    left = 1.0
+    mid  = middle_ratio
+    right = 1.0
+    c1, c2, c3 = st.columns([left, mid, right])
+    with c2:
+        st.pyplot(fig, use_container_width=False)
+        
 # Set matplotlib default parameters
 plt.rcParams.update({
     'font.size': 12,
@@ -422,8 +430,8 @@ def render_overview(df: pd.DataFrame, numeric_cols: List[str], categorical_cols:
     st.divider()
     st.subheader("Age groups vs obesity level")
     st.caption("Each row adds to 100%.")
-    
-    st.pyplot(plot_age_heatmap(df), use_container_width=True)
+    fig = plot_age_heatmap(df)
+    show_centered(fig, middle_ratio=8)
 
     #Categorical variables
     st.divider()
@@ -466,19 +474,19 @@ def render_explorer(df: pd.DataFrame, numeric_cols: List[str], categorical_cols:
             )
             with tab1:
                 fig = plot_numeric_distribution(df, "bmi_category", var, plot_type='box')
-                st.pyplot(fig, use_container_width=True)
+                show_centered(fig, middle_ratio=5)
             with tab2:
                 fig = plot_age_analysis(df, plot_type='heatmap')
-                st.pyplot(fig, use_container_width=True)
+                show_centered(fig, middle_ratio=5)
             with tab3:
                 fig = plot_age_analysis(df, plot_type='smallmultiples')
                 st.pyplot(fig, use_container_width=True)
             with tab4:
                 fig = plot_scatter_age_bmi(df)
-                st.pyplot(fig, use_container_width=True)
+                show_centered(fig, middle_ratio=5)
             with tab5:
                 fig = plot_correlation_heatmap(df, numeric_cols)
-                st.pyplot(fig, use_container_width=True)
+                show_centered(fig, middle_ratio=5)
 
         else:
             # Original: distribution + correlation
@@ -486,10 +494,10 @@ def render_explorer(df: pd.DataFrame, numeric_cols: List[str], categorical_cols:
             with tab1:
                 plot_type = 'violin' if var in ['veggie_per_meal', 'water_daily'] else 'box'
                 fig = plot_numeric_distribution(df, "bmi_category", var, plot_type=plot_type)
-                st.pyplot(fig, use_container_width=True)
+                show_centered(fig, middle_ratio=5)
             with tab2:
                 fig = plot_correlation_heatmap(df, numeric_cols)
-                st.pyplot(fig, use_container_width=True)
+                show_centered(fig, middle_ratio=5)
 
     elif var in categorical_cols:
         # Original: distribution + Cramér's V
@@ -497,10 +505,10 @@ def render_explorer(df: pd.DataFrame, numeric_cols: List[str], categorical_cols:
         with tab1:
             horizontal = (var == 'transport')
             fig = plot_categorical_distribution(df, var, horizontal=horizontal, figsize=(10, 6))
-            st.pyplot(fig, use_container_width=True)
+            show_centered(fig, middle_ratio=5)
         with tab2:
             fig = plot_cramers_heatmap(df, categorical_cols)
-            st.pyplot(fig, use_container_width=True)
+            show_centered(fig, middle_ratio=5)
 
 
 
