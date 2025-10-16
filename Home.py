@@ -44,46 +44,6 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# --- Custom CSS styling for tidy layout ---
-st.markdown("""
-<style>
-/* Add space between rows */
-.row-container {
-    margin-bottom: 25px;
-}
-
-/* Style for each feature card */
-.feature-card {
-    border: 1px solid #e0e0e0;
-    border-radius: 12px;
-    padding: 20px 18px;
-    background-color: #f9f9f9;
-    box-shadow: 1px 1px 4px rgba(0,0,0,0.05);
-    height: 100%;
-}
-
-/* Titles */
-.feature-title {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #333;
-    margin-bottom: 8px;
-}
-
-/* Description text */
-.feature-desc {
-    font-size: 0.95rem;
-    color: #555;
-    line-height: 1.4;
-}
-
-/* Make sure columns don’t stick together */
-[data-testid="stHorizontalBlock"] > div {
-    padding: 10px;  /* spacing between columns */
-}
-</style>
-""", unsafe_allow_html=True)
-
 st.markdown("### 💡 What You Can Do with **OBERISK**")
 
 # --- First row (2 columns) ---
@@ -94,7 +54,7 @@ with col1:
     st.markdown("""
     <div class="feature-card">
     <div class="feature-title">🧮 Estimate Your Obesity Risk</div>
-    <div class="feature-desc">Input your demographic data (age, sex, BMI), family history, and lifestyle factors (diet, activity, sleep, etc.) to obtain an individualized obesity risk score.</div>
+    <div class="feature-desc">Input your age, sex, family history, dietary habits, and lifestyle to obtain an individualized obesity risk score.</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -102,7 +62,7 @@ with col2:
     st.markdown("""
     <div class="feature-card">
     <div class="feature-title">📊 Visualize Risk Contributors</div>
-    <div class="feature-desc">See which factors contribute most to your predicted risk through dynamic charts and feature importance plots powered by explainable AI.</div>
+    <div class="feature-desc">See which factors contribute most to your predicted risk through dynamic charts, powered by explainable AI.</div>
     </div>
     """, unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
@@ -115,7 +75,7 @@ with col3:
     st.markdown("""
     <div class="feature-card">
     <div class="feature-title">⚙️ Compare Scenarios</div>
-    <div class="feature-desc">Modify one or more lifestyle variables (e.g., activity level or diet quality) and instantly see how your risk score changes, a “what-if” simulation to support behavioral change.</div>
+    <div class="feature-desc">Modify one or more habits and instantly see how your risk score changes, a “what-if” simulation to support behavioral change.</div>
     </div>
     """, unsafe_allow_html=True)
 
