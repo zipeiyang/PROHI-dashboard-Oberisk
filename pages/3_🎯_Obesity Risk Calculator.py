@@ -29,6 +29,9 @@ if "reset_counter" not in st.session_state:
     st.session_state.reset_counter = 0
 if "current_user_input" not in st.session_state:
     st.session_state.current_user_input = None
+if "last_user_signature" not in st.session_state:
+    st.session_state.last_user_signature = None
+
 
 # Load pre-trained model
 @st.cache_resource
@@ -48,8 +51,18 @@ def load_model():
     except Exception as e:
         st.error(f"Failed to load model: {e}")
         return None
-    
-    
+
+def _user_signature(df: pd.DataFrame) -> int:
+    cols = [
+        "age","sex","family_history",
+        "veggie_per_meal","meals_daily","water_daily",
+        "physical_activity","technological_devices",
+        "often_high_calorie_intake","freq_snack","smoking",
+        "monitor_calorie","freq_alcohol","transport",
+    ]
+    s = "|".join(str(df[c].iloc[0]) for c in cols)
+    return hash(s)
+
 # --- Helper: Likert buttons (1–3) with legend + built-in help tooltip ---
 def likert_buttons(
     label: str,
@@ -352,6 +365,11 @@ def main():
                 # Initialize counterfactual values with original values
                 st.session_state.counterfactual_values = initialize_counterfactual_values(user_input)
 
+                sig = _user_signature(user_input)
+                if sig != st.session_state.last_user_signature:
+                    st.session_state.last_user_signature = sig
+                    st.session_state.reset_counter += 1
+
             except Exception as e:
                 st.error(f"Error making prediction: {e}")
         
@@ -479,14 +497,12 @@ def main():
 
                 cf_values['often_high_calorie_intake'] = st.selectbox(
                     "Often eat high-calorie foods?", ["yes", "no"],
-                    index=["yes","no"].index(cf_values.get('often_high_calorie_intake', 'no')),
                     help="Do you eat high-calorie food frequently (calories exceeding your daily needs)?",
                     key=f"cf_often_high_calorie_intake{reset_suffix}",
                 )
 
                 cf_values['freq_snack'] = st.selectbox(
                     "Snack frequency", ["no", "Sometimes", "Frequently", "Always"],
-                    index=["no", "Sometimes", "Frequently", "Always"].index(cf_values.get('freq_snack', 'no')),
                     help="How often do you eat snacks between main meals?",
                     key=f"cf_freq_snack{reset_suffix}",
                 )
@@ -514,21 +530,18 @@ def main():
 
                 cf_values['smoking'] = st.selectbox(
                     "Smoking", ["yes", "no"],
-                    index=["yes","no"].index(cf_values.get('smoking', 'no')),
                     help="Do you currently smoke?",
                     key=f"cf_smoking{reset_suffix}",
                 )
 
                 cf_values['monitor_calorie'] = st.selectbox(
                     "Monitor calorie intake", ["yes", "no"],
-                    index=["yes","no"].index(cf_values.get('monitor_calorie', 'no')),
                     help="Do you track or count calories?",
                     key=f"cf_monitor_calorie{reset_suffix}",
                 )
 
                 cf_values['freq_alcohol'] = st.selectbox(
                     "Alcohol frequency", ["no", "Sometimes", "Frequently", "Always"],
-                    index=["no", "Sometimes", "Frequently", "Always"].index(cf_values.get('freq_alcohol', 'no')),
                     help="How often do you drink alcohol?",
                     key=f"cf_freq_alcohol{reset_suffix}",
                 )
@@ -536,9 +549,6 @@ def main():
                 cf_values['transport'] = st.selectbox(
                     "Usual transport mode",
                     ["Public_Transportation", "Walking", "Automobile", "Motorbike", "Bike"],
-                    index=["Public_Transportation", "Walking", "Automobile", "Motorbike", "Bike"].index(
-                        cf_values.get('transport', 'Public_Transportation')
-                    ),
                     help="Your most common way of getting around.",
                     key=f"cf_transport{reset_suffix}",
                 )
